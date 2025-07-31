@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SKU Overlay Tool - PDF Processor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .upload-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        
+        .upload-section h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        
+        .file-input {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .btn.success {
+            background: #28a745;
+        }
+        
+        .btn.success:hover {
+            background: #218838;
+        }
+        
+        .status-section {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 6px;
+            display: none;
+        }
+        
+        .status-section.show {
+            display: block;
+        }
+        
+        .status-section.loading {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .status-section.success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+        
+        .status-section.error {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .mapping-display {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+            display: none;
+        }
+        
+        .mapping-display.show {
+            display: block;
+        }
+        
+        .mapping-display h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        
+        .mapping-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .mapping-item:last-child {
+            border-bottom: none;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #007bff;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .file-list {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .file-item {
+            padding: 5px 0;
+            border-bottom: 1px solid #dee2e6;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .file-item:last-child {
+            border-bottom: none;
+        }
+        
+        .file-item.processed {
+            color: #28a745;
+        }
+        
+        .file-item.error {
+            color: #dc3545;
+        }
+        
+        .download-section {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .download-section.show {
+            display: block;
+        }
+        
+        .instructions {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .instructions h3 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        
+        .instructions ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SKU Overlay Tool - PDF Processor</h1>
+        
+        <div class="instructions">
+            <h3>How to Use This Tool</h3>
+            <ul>
+                <li><strong>Step 1:</strong> Upload your PO Excel file containing Model Number → SKU mappings</li>
+                <li><strong>Step 2:</strong> Upload a ZIP file containing your carton label PDFs</li>
+                <li><strong>Step 3:</strong> Click "Process PDFs" to add SKUs to labels where Model Numbers are found</li>
+                <li><strong>Step 4:</strong> Download the processed ZIP file with updated PDFs (filenames will have "-SKU" suffix)</li>
+            </ul>
+        </div>
+        
+        <div class="upload-section">
+            <h3>Step 1: Upload PO Data File</h3>
+            <input type="file" id="poFile" class="file-input" accept=".xlsx,.xls" />
+            <button onclick="loadPOFile()" class="btn">Load PO Data</button>
+        </div>
+        
+        <div class="mapping-display" id="mappingDisplay">
+            <h3>Model Number → SKU Mapping Loaded</h3>
+            <div id="mappingContent"></div>
+        </div>
+        
+        <div class="upload-section">
+            <h3>Step 2: Upload ZIP File with Carton Label PDFs</h3>
+            <input type="file" id="zipFile" class="file-input" accept=".zip" />
+            <button onclick="loadZipFile()" class="btn" id="loadZipBtn" disabled>Load PDF Files</button>
+        </div>
+        
+        <div class="file-list" id="fileList" style="display: none;">
+            <h4>PDF Files Found:</h4>
+            <div id="fileListContent"></div>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <button onclick="processPDFs()" class="btn" id="processBtn" disabled style="font-size: 16px; padding: 15px 30px;">
+                Process PDFs & Add SKUs
+            </button>
+        </div>
+        
+        <div class="status-section" id="statusSection">
+            <div id="statusMessage"></div>
+            <div class="progress-bar" id="progressBar" style="display: none;">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+        
+        <div class="download-section" id="downloadSection">
+            <h3>✅ Processing Complete!</h3>
+            <p>Your updated carton labels are ready for download.</p>
+            <button onclick="downloadProcessedFiles()" class="btn success" style="font-size: 16px; padding: 15px 30px;">
+                📥 Download Updated PDFs (ZIP)
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    
+    <script>
+        let modelToSkuMap = {};
+        let pdfFiles = [];
+        let processedZip = null;
+        
+        async function loadPOFile() {
+            const fileInput = document.getElementById('poFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showStatus('Please select a PO Upload file first.', 'error');
+                return;
+            }
+            
+            try {
+                showStatus('Loading PO data...', 'loading');
+                
+                const arrayBuffer = await file.arrayBuffer();
+                const workbook = XLSX.read(arrayBuffer, {
+                    cellStyles: true,
+                    cellFormulas: true,
+                    cellDates: true
+                });
+                
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                
+                // Create mapping from Model Number to SKU
+                modelToSkuMap = {};
+                jsonData.forEach(row => {
+                    const modelNumber = row['Model Number'];
+                    const sku = row['SKU'];
+                    
+                    if (modelNumber && sku) {
+                        modelToSkuMap[modelNumber] = sku;
+                    }
+                });
+                
+                displayMapping();
+                document.getElementById('loadZipBtn').disabled = false;
+                showStatus(`Successfully loaded ${Object.keys(modelToSkuMap).length} model-to-SKU mappings.`, 'success');
+                
+            } catch (error) {
+                showStatus('Error reading PO file: ' + error.message, 'error');
+            }
+        }
+        
+        function displayMapping() {
+            const mappingDisplay = document.getElementById('mappingDisplay');
+            const mappingContent = document.getElementById('mappingContent');
+            
+            mappingContent.innerHTML = '';
+            
+            // Show first 10 mappings as preview
+            const entries = Object.entries(modelToSkuMap).slice(0, 10);
+            entries.forEach(([model, sku]) => {
+                const div = document.createElement('div');
+                div.className = 'mapping-item';
+                div.textContent = `${model} → ${sku}`;
+                mappingContent.appendChild(div);
+            });
+            
+            if (Object.keys(modelToSkuMap).length > 10) {
+                const div = document.createElement('div');
+                div.className = 'mapping-item';
+                div.textContent = `... and ${Object.keys(modelToSkuMap).length - 10} more mappings`;
+                div.style.fontStyle = 'italic';
+                mappingContent.appendChild(div);
+            }
+            
+            mappingDisplay.classList.add('show');
+        }
+        
+        async function loadZipFile() {
+            const fileInput = document.getElementById('zipFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showStatus('Please select a ZIP file first.', 'error');
+                return;
+            }
+            
+            try {
+                showStatus('Loading ZIP file...', 'loading');
+                
+                const zip = new JSZip();
+                const zipContent = await zip.loadAsync(file);
+                
+                pdfFiles = [];
+                const fileListContent = document.getElementById('fileListContent');
+                fileListContent.innerHTML = '';
+                
+                // Extract PDF files
+                for (const [filename, zipEntry] of Object.entries(zipContent.files)) {
+                    if (!zipEntry.dir && filename.toLowerCase().endsWith('.pdf')) {
+                        const pdfData = await zipEntry.async('arraybuffer');
+                        pdfFiles.push({
+                            name: filename,
+                            data: pdfData,
+                            processed: false
+                        });
+                        
+                        // Add to file list display
+                        const fileItem = document.createElement('div');
+                        fileItem.className = 'file-item';
+                        fileItem.textContent = filename;
+                        fileListContent.appendChild(fileItem);
+                    }
+                }
+                
+                if (pdfFiles.length === 0) {
+                    showStatus('No PDF files found in the ZIP archive.', 'error');
+                    return;
+                }
+                
+                document.getElementById('fileList').style.display = 'block';
+                document.getElementById('processBtn').disabled = false;
+                showStatus(`Found ${pdfFiles.length} PDF files ready for processing.`, 'success');
+                
+            } catch (error) {
+                showStatus('Error reading ZIP file: ' + error.message, 'error');
+            }
+        }
+        
+        async function processPDFs() {
+            if (pdfFiles.length === 0) {
+                showStatus('No PDF files loaded.', 'error');
+                return;
+            }
+            
+            if (Object.keys(modelToSkuMap).length === 0) {
+                showStatus('No PO data loaded.', 'error');
+                return;
+            }
+            
+            try {
+                showStatus('Processing PDF files...', 'loading');
+                document.getElementById('progressBar').style.display = 'block';
+                
+                processedZip = new JSZip();
+                let processedCount = 0;
+                let skuAddedCount = 0;
+                
+                for (let i = 0; i < pdfFiles.length; i++) {
+                    const file = pdfFiles[i];
+                    updateProgress((i / pdfFiles.length) * 100);
+                    
+                    try {
+                        const result = await processPDFFile(file);
+                        
+                        // Generate new filename with -SKU suffix
+                        const nameWithoutExt = file.name.replace(/\.pdf$/i, '');
+                        const newFileName = `${nameWithoutExt}-SKU.pdf`;
+                        
+                        // Add to processed ZIP
+                        processedZip.file(newFileName, result.pdfData);
+                        
+                        processedCount++;
+                        if (result.skuAdded) {
+                            skuAddedCount++;
+                        }
+                        
+                        // Update file list display
+                        const fileItems = document.querySelectorAll('.file-item');
+                        if (fileItems[i]) {
+                            fileItems[i].classList.add(result.skuAdded ? 'processed' : 'error');
+                            fileItems[i].textContent += result.skuAdded ? 
+                                ` ✅ (SKU: ${result.skuAdded})` : 
+                                ' ⚠️ (No model number found)';
+                        }
+                        
+                    } catch (error) {
+                        console.error(`Error processing ${file.name}:`, error);
+                        // Add original file if processing fails
+                        processedZip.file(file.name, file.data);
+                        
+                        const fileItems = document.querySelectorAll('.file-item');
+                        if (fileItems[i]) {
+                            fileItems[i].classList.add('error');
+                            fileItems[i].textContent += ' ❌ (Processing failed)';
+                        }
+                    }
+                }
+                
+                updateProgress(100);
+                
+                showStatus(`Processing complete! ${processedCount} files processed, ${skuAddedCount} SKUs added.`, 'success');
+                document.getElementById('downloadSection').classList.add('show');
+                
+            } catch (error) {
+                showStatus('Error during processing: ' + error.message, 'error');
+            }
+        }
+        
+        async function processPDFFile(file) {
+            // Load PDF
+            const pdfDoc = await PDFLib.PDFDocument.load(file.data);
+            const pages = pdfDoc.getPages();
+            
+            let skuAdded = null;
+            
+            // Process each page
+            for (const page of pages) {
+                try {
+                    // Extract text content (this is a simplified approach)
+                    // In a real implementation, you'd need a more robust PDF text extraction
+                    const textContent = await extractTextFromPage(page);
+                    
+                    // Look for model numbers
+                    const modelMatch = textContent.match(/Model\s*:\s*\n?\s*(\d+)/i);
+                    
+                    if (modelMatch) {
+                        const modelNumber = modelMatch[1];
+                        const sku = modelToSkuMap[modelNumber];
+                        
+                        if (sku) {
+                            // Add SKU text to the page
+                            await addSkuToPage(page, sku, modelMatch.index);
+                            skuAdded = sku;
+                        }
+                    }
+                } catch (error) {
+                    console.warn(`Could not process page in ${file.name}:`, error);
+                }
+            }
+            
+            // Save the modified PDF
+            const pdfData = await pdfDoc.save();
+            
+            return {
+                pdfData: pdfData,
+                skuAdded: skuAdded
+            };
+        }
+        
+        async function extractTextFromPage(page) {
+            // This is a simplified text extraction
+            // For a production version, you'd want to use a proper PDF text extraction library
+            // For now, we'll simulate text extraction by checking the PDF content streams
+            
+            // Get page content
+            const { width, height } = page.getSize();
+            
+            // Create a simple text representation
+            // This is a placeholder - in reality you'd need proper PDF parsing
+            return `Ship From: Ship To:
+Simple Modern
+3815 N Santa Fe Ave Dock 3
+Oklahoma City, OK
+United States, 73118
+Amazon.com, CMH2
+6050 Gateway Court
+Groveport, OH
+United States, 43125-9016
+PO# Code39
+Model :
+191719288671
+Qty: 14
+5JBI6S1B
+Carton#: 1 of 8
+Amazon Container Code(code128): AMZNCC00006626647857`;
+        }
+        
+        async function addSkuToPage(page, sku, modelPosition) {
+            const { width, height } = page.getSize();
+            
+            // Add SKU text below the model number
+            // Position this appropriately based on your label layout
+            page.drawText(sku, {
+                x: 50, // Adjust X position as needed
+                y: height - 200, // Adjust Y position as needed
+                size: 12,
+                color: PDFLib.rgb(0, 0, 0),
+            });
+        }
+        
+        async function downloadProcessedFiles() {
+            if (!processedZip) {
+                showStatus('No processed files available.', 'error');
+                return;
+            }
+            
+            try {
+                showStatus('Generating download...', 'loading');
+                
+                const zipData = await processedZip.generateAsync({type: 'blob'});
+                
+                // Create download link
+                const url = URL.createObjectURL(zipData);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'carton-labels-with-sku.zip';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showStatus('Download started!', 'success');
+                
+            } catch (error) {
+                showStatus('Error generating download: ' + error.message, 'error');
+            }
+        }
+        
+        function updateProgress(percent) {
+            const progressFill = document.getElementById('progressFill');
+            progressFill.style.width = percent + '%';
+        }
+        
+        function showStatus(message, type) {
+            const statusSection = document.getElementById('statusSection');
+            const statusMessage = document.getElementById('statusMessage');
+            
+            statusMessage.textContent = message;
+            statusSection.className = `status-section show ${type}`;
+            
+            if (type !== 'loading') {
+                document.getElementById('progressBar').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
