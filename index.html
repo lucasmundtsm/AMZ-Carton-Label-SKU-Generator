@@ -3,792 +3,2008 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SKU Overlay Tool - PDF Processor</title>
+    <title>SM Amazon +SKU Label Processor</title>
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: Arial, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
+            font-family: 'Inter', 'Amazon Ember', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 50%, #CBD5E1 100%);
+            min-height: 100vh; padding: 20px; color: #0F172A;
         }
-        
         .container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        h1 {
-            color: #333;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .upload-section {
-            margin-bottom: 30px;
-            padding: 20px;
-            border: 2px dashed #ddd;
-            border-radius: 8px;
-            background: #fafafa;
-        }
-        
-        .upload-section h3 {
-            margin-top: 0;
-            color: #007bff;
-        }
-        
-        .file-input {
-            margin: 10px 0;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        
-        .btn {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            margin: 5px;
-            transition: background-color 0.3s;
-        }
-        
-        .btn:hover {
-            background: #0056b3;
-        }
-        
-        .btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        
-        .btn.success {
-            background: #28a745;
-        }
-        
-        .btn.success:hover {
-            background: #218838;
-        }
-        
-        .status-section {
-            margin: 20px 0;
-            padding: 15px;
-            border-radius: 6px;
-            display: none;
-        }
-        
-        .status-section.show {
-            display: block;
-        }
-        
-        .status-section.loading {
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-        }
-        
-        .status-section.success {
-            background: #d4edda;
-            border-left: 4px solid #28a745;
-        }
-        
-        .status-section.error {
-            background: #f8d7da;
-            border-left: 4px solid #dc3545;
-        }
-        
-        .mapping-display {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 6px;
-            margin: 20px 0;
-            border-left: 4px solid #007bff;
-            display: none;
-        }
-        
-        .mapping-display.show {
-            display: block;
-        }
-        
-        .mapping-display h3 {
-            margin-top: 0;
-            color: #007bff;
-        }
-        
-        .mapping-item {
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
-            font-family: monospace;
-            font-size: 12px;
-        }
-        
-        .mapping-item:last-child {
-            border-bottom: none;
-        }
-        
-        .progress-bar {
-            width: 100%;
-            height: 20px;
-            background-color: #e9ecef;
-            border-radius: 10px;
+            max-width: 1100px; margin: 0 auto;
+            background: rgba(15, 23, 42, 0.05); backdrop-filter: blur(20px);
+            border-radius: 24px; border: 1px solid rgba(15, 23, 42, 0.1);
+            box-shadow: 0 32px 64px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(15, 23, 42, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.1);
             overflow: hidden;
-            margin: 10px 0;
         }
-        
-        .progress-fill {
-            height: 100%;
-            background-color: #007bff;
-            width: 0%;
-            transition: width 0.3s ease;
+        .header {
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+            color: white; padding: 60px 40px; text-align: center; position: relative; overflow: hidden;
         }
-        
-        .file-list {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 6px;
-            margin: 15px 0;
-            max-height: 300px;
-            overflow-y: auto;
+        .header h1 { font-size: 3.2rem; margin-bottom: 20px; font-weight: 900; letter-spacing: -2px; color: white; }
+        .header p { font-size: 1.3rem; opacity: 0.9; font-weight: 500; letter-spacing: 0.5px; }
+        .main-content { padding: 50px; background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(20px); }
+        .processor-tabs {
+            display: flex; margin-bottom: 40px; border-radius: 16px; overflow: hidden;
+            background: rgba(15, 23, 42, 0.05); backdrop-filter: blur(10px);
+            border: 1px solid rgba(15, 23, 42, 0.1); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
-        
-        .file-item {
-            padding: 8px 0;
-            border-bottom: 1px solid #dee2e6;
-            font-family: monospace;
-            font-size: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .tab {
+            flex: 1; padding: 20px 28px; background: transparent; border: none; cursor: pointer;
+            font-weight: 600; font-size: 1.1rem; transition: all 0.4s ease; color: #64748B; position: relative;
         }
-        
-        .file-item:last-child {
-            border-bottom: none;
+        .tab::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #FF9500, #FF6B35); opacity: 0; transition: opacity 0.4s ease; z-index: 0;
         }
-        
-        .file-item.processed {
-            color: #28a745;
+        .tab span { position: relative; z-index: 1; }
+        .tab.active { color: white; transform: translateY(-2px); }
+        .tab.active::before { opacity: 1; }
+        .processor-section { display: none; }
+        .processor-section.active { display: block; }
+        .requirements {
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); color: white;
+            border-radius: 20px; padding: 35px; margin-bottom: 40px;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
         }
-        
-        .file-item.error {
-            color: #dc3545;
+        .requirements h3 {
+            margin-bottom: 20px; font-size: 1.5rem; font-weight: 800;
+            background: linear-gradient(135deg, #FF9500, #FF6B35);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
-        
-        .file-status {
-            font-size: 11px;
-            padding: 2px 6px;
-            border-radius: 3px;
-            background: #e9ecef;
-        }
-        
-        .file-status.success {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .file-status.error {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        
-        .download-section {
-            text-align: center;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            margin: 20px 0;
-            display: none;
-        }
-        
-        .download-section.show {
-            display: block;
-        }
-        
-        .instructions {
-            background: #e3f2fd;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #2196f3;
-        }
-        
-        .instructions h3 {
-            margin-top: 0;
-            color: #1976d2;
-        }
-        
-        .instructions ul {
-            margin: 10px 0;
-            padding-left: 20px;
-        }
-        
-        .instructions li {
-            margin: 5px 0;
-        }
-        
-        .drag-drop-area {
-            border: 2px dashed #007bff;
-            border-radius: 8px;
-            padding: 40px;
-            text-align: center;
-            background: #f8f9ff;
-            margin: 15px 0;
-            transition: all 0.3s ease;
+        .requirements ul { list-style: none; }
+        .requirements li { margin-bottom: 12px; padding-left: 20px; position: relative; line-height: 1.6; }
+        .requirements li:before { content: "✓"; position: absolute; left: 0; font-weight: bold; color: #FF9500; }
+        .upload-area {
+            border: 2px dashed #CBD5E1; border-radius: 20px; padding: 50px; text-align: center;
+            transition: all 0.4s ease; background: linear-gradient(135deg, rgba(255, 149, 0, 0.02), rgba(255, 107, 53, 0.04));
             cursor: pointer;
         }
-        
-        .drag-drop-area.drag-over {
-            border-color: #0056b3;
-            background: #e7f3ff;
+        .upload-area:hover {
+            border-color: #FF9500; transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 20px 40px rgba(255, 149, 0, 0.15), 0 0 0 1px rgba(255, 149, 0, 0.1);
         }
-        
-        .drag-drop-area:hover {
-            border-color: #0056b3;
-            background: #e7f3ff;
+        .upload-icon { font-size: 4rem; margin-bottom: 24px; color: #FF9500; }
+        .upload-text { font-size: 1.5rem; color: #0F172A; margin-bottom: 12px; font-weight: 700; }
+        .upload-subtext { color: #64748B; font-size: 1.1rem; font-weight: 500; }
+        .file-input { display: none; }
+        .btn {
+            background: linear-gradient(135deg, #FF9500 0%, #FF6B35 100%); color: white;
+            border: none; padding: 18px 36px; border-radius: 14px; font-size: 1.1rem; font-weight: 700;
+            cursor: pointer; transition: all 0.4s ease; margin: 12px;
+            box-shadow: 0 8px 25px rgba(255, 149, 0, 0.3), 0 0 0 1px rgba(255, 149, 0, 0.1);
         }
-        
-        .multiple-files {
-            display: none;
+        .btn:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 15px 40px rgba(255, 149, 0, 0.4); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; background: #94A3B8; }
+        .file-item {
+            background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(15, 23, 42, 0.1);
+            border-radius: 16px; padding: 20px; margin-bottom: 16px;
+            display: flex; align-items: center; justify-content: space-between; transition: all 0.4s ease;
         }
+        .file-item:hover { background: rgba(255, 255, 255, 0.95); transform: translateY(-2px) scale(1.01); }
+        .file-info { display: flex; align-items: center; }
+        .file-icon { font-size: 1.5rem; margin-right: 15px; }
+        .file-name { font-weight: 600; color: #0F172A; font-size: 1rem; }
+        .file-size { color: #64748B; font-size: 0.9rem; margin-top: 4px; }
+        .remove-file { background: #B12704; color: white; border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; }
+        .progress {
+            width: 100%; height: 16px; background: rgba(203, 213, 225, 0.3); border-radius: 12px;
+            margin: 24px 0; display: none; box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .progress-bar {
+            height: 100%; background: linear-gradient(90deg, #FF9500 0%, #FF6B35 100%);
+            width: 0%; transition: width 0.4s ease; border-radius: 12px;
+        }
+        .status { text-align: center; margin: 20px 0; padding: 20px; border-radius: 10px; display: none; }
+        .status.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status.processing { background: #cce7ff; color: #004085; border: 1px solid #b8daff; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>SKU Overlay Tool - PDF Processor</h1>
-        
-        <div class="instructions">
-            <h3>How to Use This Tool</h3>
-            <ul>
-                <li><strong>Step 1:</strong> Upload your PO Excel file containing Model Number → SKU mappings</li>
-                <li><strong>Step 2:</strong> Upload PDF files (individually or as a ZIP file)</li>
-                <li><strong>Step 3:</strong> Click "Process PDFs" to add SKUs to labels</li>
-                <li><strong>Step 4:</strong> Download the processed files with "-SKU" suffix</li>
-            </ul>
-            <p><strong>Note:</strong> This tool will add the corresponding SKU at the end of each carton label based on the Model Number found in the PDF.</p>
+        <div class="header">
+            <h1>SM Amazon +SKU Label Processor</h1>
+            <p>Automated label processing with SKU overlay and PO splitting - Now with ASIN support</p>
         </div>
-        
-        <div class="upload-section">
-            <h3>Step 1: Upload PO Data File</h3>
-            <input type="file" id="poFile" class="file-input" accept=".xlsx,.xls" />
-            <button onclick="loadPOFile()" class="btn">Load PO Data</button>
-        </div>
-        
-        <div class="mapping-display" id="mappingDisplay">
-            <h3>Model Number → SKU Mapping Loaded</h3>
-            <div id="mappingContent"></div>
-        </div>
-        
-        <div class="upload-section">
-            <h3>Step 2: Upload PDF Files</h3>
-            <div class="drag-drop-area" id="pdfDropArea" onclick="document.getElementById('pdfFiles').click()">
-                <p><strong>Click to select PDF files</strong> or drag and drop here</p>
-                <p>Accepts: Individual PDFs or ZIP files containing PDFs</p>
+        <div class="main-content">
+            <div class="processor-tabs">
+                <button class="tab active" onclick="switchTab('eu')"><span>Amazon EU Labels</span></button>
+                <button class="tab" onclick="switchTab('unis')"><span>UNIS Amazon Labels</span></button>
+                <button class="tab" onclick="switchTab('encore')"><span>Encore Amazon Labels</span></button>
             </div>
-            <input type="file" id="pdfFiles" class="file-input multiple-files" multiple accept=".pdf" />
-            <input type="file" id="zipFile" class="file-input" accept=".zip" style="display: none;" />
-            
-            <div style="text-align: center; margin: 15px 0;">
-                <button onclick="switchToZipMode()" class="btn" id="zipModeBtn">Or Upload ZIP File Instead</button>
-                <button onclick="switchToPdfMode()" class="btn" id="pdfModeBtn" style="display: none;">Or Select Individual PDFs</button>
+
+            <div class="processor-section active" id="eu-section">
+                <div class="requirements">
+                    <h3>File Requirements for Amazon EU Labels</h3>
+                    <ul>
+                        <li><strong>Picklist File:</strong> Excel (.xlsx) or CSV with columns: Order/PO number, Fulfilment Centre, UCC, UPC, EAN, ASIN, SKU</li>
+                        <li><strong>Amazon EU Label PDFs:</strong> Individual PDF files or ZIP archive containing multiple PDFs</li>
+                        <li><strong>Filename Format:</strong> First 4 characters should indicate Fulfilment Centre (FC)</li>
+                        <li><strong>Processing:</strong> Matches UPC/EAN/ASIN codes, groups labels by PO number, overlays SKU at (x=7, y=280), outputs separate PDFs per PO</li>
+                    </ul>
+                </div>
+                <div class="upload-section">
+                    <div class="upload-area" id="uploadAreaEU">
+                        <div class="upload-icon">📁</div>
+                        <div class="upload-text">Drop your files here or click to browse</div>
+                        <div class="upload-subtext">Upload picklist (Excel/CSV) and Amazon EU label PDFs or ZIP files</div>
+                    </div>
+                    <input type="file" id="fileInputEU" class="file-input" multiple accept=".pdf,.xlsx,.xls,.csv,.zip">
+                    <div class="file-list" id="fileListEU"></div>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button class="btn" id="processBtnEU" disabled>Process EU Labels</button>
+                        <button class="btn" id="clearBtnEU">Clear All</button>
+                    </div>
+                </div>
+                <div class="progress" id="progressContainerEU">
+                    <div class="progress-bar" id="progressBarEU"></div>
+                </div>
+                <div class="status" id="statusMessageEU"></div>
             </div>
-        </div>
-        
-        <div class="file-list" id="fileList" style="display: none;">
-            <h4>Files Ready for Processing:</h4>
-            <div id="fileListContent"></div>
-        </div>
-        
-        <div style="text-align: center; margin: 30px 0;">
-            <button onclick="processPDFs()" class="btn" id="processBtn" disabled style="font-size: 16px; padding: 15px 30px;">
-                Process PDFs & Add SKUs
-            </button>
-        </div>
-        
-        <div class="status-section" id="statusSection">
-            <div id="statusMessage"></div>
-            <div class="progress-bar" id="progressBar" style="display: none;">
-                <div class="progress-fill" id="progressFill"></div>
+
+            <div class="processor-section" id="unis-section">
+                <div class="requirements">
+                    <h3>File Requirements for UNIS Amazon Labels</h3>
+                    <ul>
+                        <li><strong>Picklist File:</strong> Excel (.xlsx) or CSV with columns: ARN, UPC, EAN, ASIN, SKU</li>
+                        <li><strong>Amazon Carton Label PDFs:</strong> Individual PDF files or ZIP archive containing multiple PDFs</li>
+                        <li><strong>Filename Format:</strong> First word before space/underscore should be ARN</li>
+                        <li><strong>Processing:</strong> Extracts Model numbers, UPC/EAN/ASIN codes, handles SM-/SM2- conversions and -M suffix variations</li>
+                        <li><strong>Model Matching:</strong> Automatically converts between SM- and SM2- prefixes, handles -M suffix additions/removals</li>
+                    </ul>
+                </div>
+                <div class="upload-section">
+                    <div class="upload-area" id="uploadAreaUNIS">
+                        <div class="upload-icon">📁</div>
+                        <div class="upload-text">Drop your files here or click to browse</div>
+                        <div class="upload-subtext">Upload picklist (Excel/CSV) and UNIS Amazon carton label PDFs or ZIP files</div>
+                    </div>
+                    <input type="file" id="fileInputUNIS" class="file-input" multiple accept=".pdf,.xlsx,.xls,.csv,.zip">
+                    <div class="file-list" id="fileListUNIS"></div>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button class="btn" id="processBtnUNIS" disabled>Process UNIS Labels</button>
+                        <button class="btn" id="clearBtnUNIS">Clear All</button>
+                    </div>
+                </div>
+                <div class="progress" id="progressContainerUNIS">
+                    <div class="progress-bar" id="progressBarUNIS"></div>
+                </div>
+                <div class="status" id="statusMessageUNIS"></div>
             </div>
-        </div>
-        
-        <div class="download-section" id="downloadSection">
-            <h3>✅ Processing Complete!</h3>
-            <p>Your updated carton labels are ready for download.</p>
-            <div id="downloadButtons"></div>
+
+            <div class="processor-section" id="encore-section">
+                <div class="requirements">
+                    <h3>File Requirements for Encore Amazon Labels</h3>
+                    <ul>
+                        <li><strong>Picklist File:</strong> Excel (.xlsx) or CSV with columns: Fulfillment Center, UPC, SKU (tab named 'picklist')</li>
+                        <li><strong>Amazon Carton Label PDFs:</strong> Individual PDF files or ZIP archive containing multiple PDFs</li>
+                        <li><strong>Filename Format:</strong> First word before space/underscore should be Fulfillment Center</li>
+                        <li><strong>Processing:</strong> Dual match logic with model/UPC extraction, per-file SKU sorting, clean overlay at (x=7, y=280)</li>
+                        <li><strong>Enhanced Features:</strong> Same-line model extraction, hyphen continuation, per-page processing without carry-over</li>
+                    </ul>
+                </div>
+                <div class="upload-section">
+                    <div class="upload-area" id="uploadAreaENCORE">
+                        <div class="upload-icon">📁</div>
+                        <div class="upload-text">Drop your files here or click to browse</div>
+                        <div class="upload-subtext">Upload picklist (Excel/CSV) and Encore Amazon carton label PDFs or ZIP files</div>
+                    </div>
+                    <input type="file" id="fileInputENCORE" class="file-input" multiple accept=".pdf,.xlsx,.xls,.csv,.zip">
+                    <div class="file-list" id="fileListENCORE"></div>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button class="btn" id="processBtnENCORE" disabled>Process Encore Labels</button>
+                        <button class="btn" id="clearBtnENCORE">Clear All</button>
+                    </div>
+                </div>
+                <div class="progress" id="progressContainerENCORE">
+                    <div class="progress-bar" id="progressBarENCORE"></div>
+                </div>
+                <div class="status" id="statusMessageENCORE"></div>
+            </div>
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
     <script>
-        let modelToSkuMap = {};
-        let pdfFiles = [];
-        let processedFiles = [];
-        let isZipMode = false;
+        console.log('🔄 SM Amazon Label Processor v2.2 - With ASIN Support');
         
-        // Set up drag and drop
-        const dropArea = document.getElementById('pdfDropArea');
-        
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropArea.addEventListener(eventName, preventDefaults, false);
-        });
-        
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
+        let uploadedFilesEU = [];
+        let uploadedFilesUNIS = [];
+        let uploadedFilesENCORE = [];
+        let currentTab = 'eu';
+        let picklistData = null;
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            const tabIndex = tab === 'eu' ? 1 : tab === 'unis' ? 2 : 3;
+            document.querySelector(`.tab:nth-child(${tabIndex})`).classList.add('active');
+            document.querySelectorAll('.processor-section').forEach(s => s.classList.remove('active'));
+            document.getElementById(`${tab}-section`).classList.add('active');
+            currentTab = tab;
         }
-        
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropArea.addEventListener(eventName, () => dropArea.classList.add('drag-over'), false);
-        });
-        
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropArea.addEventListener(eventName, () => dropArea.classList.remove('drag-over'), false);
-        });
-        
-        dropArea.addEventListener('drop', handleDrop, false);
-        
-        function handleDrop(e) {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            handleFileSelection(files);
+
+        function getCurrentFiles() {
+            return currentTab === 'eu' ? uploadedFilesEU : currentTab === 'unis' ? uploadedFilesUNIS : uploadedFilesENCORE;
         }
-        
-        // File input change handlers
-        document.getElementById('pdfFiles').addEventListener('change', function(e) {
-            handleFileSelection(e.target.files);
-        });
-        
-        document.getElementById('zipFile').addEventListener('change', function(e) {
-            if (e.target.files.length > 0) {
-                handleZipFile(e.target.files[0]);
-            }
-        });
-        
-        function switchToZipMode() {
-            isZipMode = true;
-            document.getElementById('pdfFiles').style.display = 'none';
-            document.getElementById('zipFile').style.display = 'block';
-            document.getElementById('zipModeBtn').style.display = 'none';
-            document.getElementById('pdfModeBtn').style.display = 'inline-block';
-            dropArea.innerHTML = '<p><strong>Click to select ZIP file</strong> or drag and drop here</p><p>ZIP file should contain PDF carton labels</p>';
-            dropArea.onclick = () => document.getElementById('zipFile').click();
+
+        function getCurrentElements() {
+            const suffix = currentTab.toUpperCase();
+            return {
+                uploadArea: document.getElementById(`uploadArea${suffix}`),
+                fileInput: document.getElementById(`fileInput${suffix}`),
+                fileList: document.getElementById(`fileList${suffix}`),
+                processBtn: document.getElementById(`processBtn${suffix}`),
+                clearBtn: document.getElementById(`clearBtn${suffix}`),
+                progressContainer: document.getElementById(`progressContainer${suffix}`),
+                progressBar: document.getElementById(`progressBar${suffix}`),
+                statusMessage: document.getElementById(`statusMessage${suffix}`)
+            };
         }
-        
-        function switchToPdfMode() {
-            isZipMode = false;
-            document.getElementById('pdfFiles').style.display = 'block';
-            document.getElementById('zipFile').style.display = 'none';
-            document.getElementById('zipModeBtn').style.display = 'inline-block';
-            document.getElementById('pdfModeBtn').style.display = 'none';
-            dropArea.innerHTML = '<p><strong>Click to select PDF files</strong> or drag and drop here</p><p>Accepts: Individual PDFs or ZIP files containing PDFs</p>';
-            dropArea.onclick = () => document.getElementById('pdfFiles').click();
-        }
-        
-        async function loadPOFile() {
-            const fileInput = document.getElementById('poFile');
-            const file = fileInput.files[0];
-            
-            if (!file) {
-                showStatus('Please select a PO Upload file first.', 'error');
-                return;
-            }
-            
-            try {
-                showStatus('Loading PO data...', 'loading');
-                
-                const arrayBuffer = await file.arrayBuffer();
-                const workbook = XLSX.read(arrayBuffer, {
-                    cellStyles: true,
-                    cellFormulas: true,
-                    cellDates: true
-                });
-                
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-                
-                // Create mapping from Model Number to SKU
-                modelToSkuMap = {};
-                jsonData.forEach(row => {
-                    const modelNumber = row['Model Number'];
-                    const sku = row['SKU'];
-                    
-                    if (modelNumber && sku) {
-                        modelToSkuMap[modelNumber] = sku;
-                    }
-                });
-                
-                displayMapping();
-                showStatus(`Successfully loaded ${Object.keys(modelToSkuMap).length} model-to-SKU mappings.`, 'success');
-                
-            } catch (error) {
-                showStatus('Error reading PO file: ' + error.message, 'error');
-            }
-        }
-        
-        function displayMapping() {
-            const mappingDisplay = document.getElementById('mappingDisplay');
-            const mappingContent = document.getElementById('mappingContent');
-            
-            mappingContent.innerHTML = '';
-            
-            // Show first 10 mappings as preview
-            const entries = Object.entries(modelToSkuMap).slice(0, 10);
-            entries.forEach(([model, sku]) => {
-                const div = document.createElement('div');
-                div.className = 'mapping-item';
-                div.textContent = `${model} → ${sku}`;
-                mappingContent.appendChild(div);
+
+        function initializeTab(tab) {
+            const suffix = tab.toUpperCase();
+            const uploadArea = document.getElementById(`uploadArea${suffix}`);
+            const fileInput = document.getElementById(`fileInput${suffix}`);
+            const clearBtn = document.getElementById(`clearBtn${suffix}`);
+            const processBtn = document.getElementById(`processBtn${suffix}`);
+
+            uploadArea.addEventListener('click', () => fileInput.click());
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
             });
-            
-            if (Object.keys(modelToSkuMap).length > 10) {
-                const div = document.createElement('div');
-                div.className = 'mapping-item';
-                div.textContent = `... and ${Object.keys(modelToSkuMap).length - 10} more mappings`;
-                div.style.fontStyle = 'italic';
-                mappingContent.appendChild(div);
-            }
-            
-            mappingDisplay.classList.add('show');
+            uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                currentTab = tab;
+                handleFiles(e.dataTransfer.files);
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                currentTab = tab;
+                handleFiles(e.target.files);
+            });
+
+            clearBtn.addEventListener('click', () => {
+                currentTab = tab;
+                clearFiles();
+            });
+
+            processBtn.addEventListener('click', () => {
+                currentTab = tab;
+                processFiles();
+            });
         }
-        
-        async function handleFileSelection(fileList) {
-            const files = Array.from(fileList);
+
+        initializeTab('eu');
+        initializeTab('unis');
+        initializeTab('encore');
+
+        async function handleFiles(files) {
+            console.log('📁 Processing', files.length, 'files');
+            const currentFiles = getCurrentFiles();
             
-            if (files.length === 0) return;
-            
-            // Check if any files are ZIP
-            const zipFiles = files.filter(f => f.name.toLowerCase().endsWith('.zip'));
-            const pdfFilesOnly = files.filter(f => f.name.toLowerCase().endsWith('.pdf'));
-            
-            if (zipFiles.length > 0) {
-                // Handle ZIP files
-                for (const zipFile of zipFiles) {
-                    await handleZipFile(zipFile);
-                }
-            }
-            
-            if (pdfFilesOnly.length > 0) {
-                // Handle PDF files directly
-                for (const pdfFile of pdfFilesOnly) {
-                    const arrayBuffer = await pdfFile.arrayBuffer();
-                    pdfFiles.push({
-                        name: pdfFile.name,
-                        data: arrayBuffer,
-                        processed: false
-                    });
+            for (let file of Array.from(files)) {
+                console.log('📄 File:', file.name, 'Size:', file.size);
+                
+                if (isValidFileType(file)) {
+                    currentFiles.push(file);
+                    
+                    if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls') || file.name.endsWith('.csv')) {
+                        console.log('📊 Found picklist file:', file.name);
+                        await parsePicklist(file);
+                    }
                 }
             }
             
             updateFileList();
+            updateProcessButton();
         }
-        
-        async function handleZipFile(file) {
+
+        function isValidFileType(file) {
+            const validTypes = ['.pdf', '.xlsx', '.xls', '.csv', '.zip'];
+            const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+            return validTypes.includes(fileExtension);
+        }
+
+        async function parsePicklist(file) {
             try {
-                showStatus('Loading ZIP file...', 'loading');
+                console.log('📊 Parsing picklist:', file.name);
+                let data;
                 
-                const zip = new JSZip();
-                const zipContent = await zip.loadAsync(file);
-                
-                // Extract PDF files from ZIP
-                for (const [filename, zipEntry] of Object.entries(zipContent.files)) {
-                    if (!zipEntry.dir && filename.toLowerCase().endsWith('.pdf')) {
-                        const pdfData = await zipEntry.async('arraybuffer');
-                        pdfFiles.push({
-                            name: filename,
-                            data: pdfData,
-                            processed: false
-                        });
-                    }
-                }
-                
-                if (pdfFiles.length === 0) {
-                    showStatus('No PDF files found in the ZIP archive.', 'error');
+                if (file.name.endsWith('.csv')) {
+                    const text = await file.text();
+                    data = parseCSV(text);
+                } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+                    const arrayBuffer = await file.arrayBuffer();
+                    data = parseExcel(arrayBuffer);
+                } else {
+                    showStatus('error', 'Unsupported file format. Please upload CSV or Excel files.');
                     return;
                 }
                 
-                showStatus(`Found ${pdfFiles.length} PDF files in ZIP archive.`, 'success');
-                
+                if (data && data.length > 0) {
+                    picklistData = data;
+                    console.log('✅ Picklist normalized successfully:', picklistData.length, 'rows');
+                    console.log('📋 Sample normalized row:', picklistData[0]);
+                    showStatus('success', `Picklist loaded successfully! ${data.length} records found.`);
+                    setTimeout(() => hideStatus(), 3000);
+                } else {
+                    console.log('❌ No data parsed from picklist');
+                    showStatus('error', 'Picklist appears to be empty or invalid format.');
+                }
             } catch (error) {
-                showStatus('Error reading ZIP file: ' + error.message, 'error');
+                console.error('💥 Error parsing picklist:', error);
+                showStatus('error', 'Error parsing picklist: ' + error.message);
             }
         }
-        
+
+        function parseCSV(text) {
+            const lines = text.trim().split('\n');
+            if (lines.length < 2) throw new Error('CSV must have header + at least one data row');
+            
+            let separator = ',';
+            const firstLine = lines[0];
+            if (firstLine.includes(';') && firstLine.split(';').length > firstLine.split(',').length) {
+                separator = ';';
+            } else if (firstLine.includes('\t')) {
+                separator = '\t';
+            }
+            
+            const headers = firstLine.split(separator).map(h => h.trim().replace(/^"|"$/g, ''));
+            const data = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                if (lines[i].trim() === '') continue;
+                const values = lines[i].split(separator).map(v => v.trim().replace(/^"|"$/g, ''));
+                const row = {};
+                headers.forEach((header, index) => {
+                    row[header] = values[index] || '';
+                });
+                data.push(row);
+            }
+            
+            return normalizePicklistData(data);
+        }
+
+        function parseExcel(arrayBuffer) {
+            const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+            let sheetName = workbook.SheetNames.find(name => 
+                name.toLowerCase().includes('picklist') || 
+                name.toLowerCase().includes('pick') ||
+                name.toLowerCase() === 'sheet1'
+            ) || workbook.SheetNames[0];
+            
+            const worksheet = workbook.Sheets[sheetName];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet);
+            
+            const cleanData = jsonData.filter(row => {
+                return Object.values(row).some(val => val !== null && val !== undefined && val !== '');
+            }).map(row => {
+                const cleanRow = {};
+                Object.keys(row).forEach(key => {
+                    const cleanKey = key.trim();
+                    const value = row[key];
+                    cleanRow[cleanKey] = (value !== null && value !== undefined) ? String(value).trim() : '';
+                });
+                return cleanRow;
+            });
+            
+            return normalizePicklistData(cleanData);
+        }
+
+        function normalizePicklistData(data) {
+            console.log('🔄 Starting comprehensive picklist normalization...');
+            
+            return data.map(row => {
+                const normalized = {};
+                
+                Object.keys(row).forEach(key => {
+                    let value = row[key];
+                    if (value !== null && value !== undefined) {
+                        value = String(value).trim();
+                        if (value.endsWith('.0') && !isNaN(parseFloat(value))) {
+                            value = value.replace('.0', '');
+                        }
+                    } else {
+                        value = '';
+                    }
+                    normalized[key] = value;
+                });
+                
+                // Normalize UPC codes
+                if (normalized.UPC) {
+                    let upc = normalized.UPC.toString().trim().replace(/\D/g, '');
+                    if (upc.length === 12) {
+                        normalized.UPC = upc;
+                        normalized.UPC_13 = '0' + upc;
+                    } else if (upc.length === 13) {
+                        normalized.UPC = upc.startsWith('0') ? upc.substring(1) : upc;
+                        normalized.UPC_13 = upc;
+                    } else {
+                        normalized.UPC = upc;
+                    }
+                }
+                
+                // Normalize EAN codes
+                if (normalized.EAN) {
+                    let ean = normalized.EAN.toString().trim().replace(/\D/g, '');
+                    if (ean.length > 0 && ean.length < 13) {
+                        ean = ean.padStart(13, '0');
+                    }
+                    normalized.EAN = ean;
+                }
+                
+                // Normalize FC
+                if (normalized['Fulfilment Centre']) {
+                    normalized['Fulfilment Centre'] = normalized['Fulfilment Centre'].toString().trim().toUpperCase();
+                }
+                if (normalized['Fulfillment Center']) {
+                    normalized['Fulfillment Center'] = normalized['Fulfillment Center'].toString().trim().toUpperCase();
+                }
+                
+                // Normalize PO
+                if (normalized['Order/PO number']) {
+                    normalized['Order/PO number'] = normalized['Order/PO number'].toString().trim().toUpperCase();
+                }
+                
+                // Normalize ASIN
+                if (normalized.ASIN) {
+                    normalized.ASIN = normalized.ASIN.toString().trim().toUpperCase();
+                }
+                
+                // Normalize ARN
+                if (normalized.ARN) {
+                    normalized.ARN = normalized.ARN.toString().trim().toUpperCase();
+                }
+                
+                return normalized;
+            });
+        }
+
         function updateFileList() {
-            if (pdfFiles.length === 0) return;
+            const elements = getCurrentElements();
+            const currentFiles = getCurrentFiles();
             
-            const fileList = document.getElementById('fileList');
-            const fileListContent = document.getElementById('fileListContent');
-            
-            fileListContent.innerHTML = '';
-            
-            pdfFiles.forEach((file, index) => {
+            elements.fileList.innerHTML = '';
+            currentFiles.forEach((file, index) => {
                 const fileItem = document.createElement('div');
                 fileItem.className = 'file-item';
                 
-                const fileName = document.createElement('span');
-                fileName.textContent = file.name;
+                const fileInfo = document.createElement('div');
+                fileInfo.className = 'file-info';
                 
-                const fileStatus = document.createElement('span');
-                fileStatus.className = 'file-status';
-                fileStatus.textContent = 'Ready';
+                const icon = getFileIcon(file.name);
+                const size = formatFileSize(file.size);
                 
-                fileItem.appendChild(fileName);
-                fileItem.appendChild(fileStatus);
-                fileListContent.appendChild(fileItem);
+                fileInfo.innerHTML = `
+                    <div class="file-icon">${icon}</div>
+                    <div>
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-size">${size}</div>
+                    </div>
+                `;
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-file';
+                removeBtn.innerHTML = '×';
+                removeBtn.onclick = () => removeFile(index);
+                
+                fileItem.appendChild(fileInfo);
+                fileItem.appendChild(removeBtn);
+                elements.fileList.appendChild(fileItem);
             });
-            
-            fileList.style.display = 'block';
-            document.getElementById('processBtn').disabled = Object.keys(modelToSkuMap).length === 0;
         }
-        
-        async function processPDFs() {
-            if (pdfFiles.length === 0) {
-                showStatus('No PDF files loaded.', 'error');
-                return;
-            }
+
+        function getFileIcon(filename) {
+            const extension = filename.split('.').pop().toLowerCase();
+            const icons = { 'pdf': '📄', 'xlsx': '📊', 'xls': '📊', 'csv': '📋', 'zip': '📦' };
+            return icons[extension] || '📁';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function removeFile(index) {
+            const currentFiles = getCurrentFiles();
+            currentFiles.splice(index, 1);
+            updateFileList();
+            updateProcessButton();
+        }
+
+        function updateProcessButton() {
+            const elements = getCurrentElements();
+            const currentFiles = getCurrentFiles();
             
-            if (Object.keys(modelToSkuMap).length === 0) {
-                showStatus('No PO data loaded.', 'error');
+            const hasPicklist = currentFiles.some(file => 
+                file.name.endsWith('.xlsx') || file.name.endsWith('.xls') || file.name.endsWith('.csv')
+            );
+            const hasLabels = currentFiles.some(file => 
+                file.name.endsWith('.pdf') || file.name.endsWith('.zip')
+            );
+            
+            elements.processBtn.disabled = !(hasPicklist && hasLabels && picklistData);
+        }
+
+        function clearFiles() {
+            const elements = getCurrentElements();
+            const currentFiles = getCurrentFiles();
+            
+            currentFiles.length = 0;
+            elements.fileInput.value = '';
+            picklistData = null;
+            updateFileList();
+            updateProcessButton();
+            hideStatus();
+        }
+
+        async function processFiles() {
+            if (!picklistData || picklistData.length === 0) {
+                showStatus('error', 'Please upload a valid picklist file first.');
                 return;
             }
+
+            const elements = getCurrentElements();
+            const processorType = currentTab === 'eu' ? 'EU' : currentTab === 'unis' ? 'UNIS' : 'Encore';
+            
+            showStatus('processing', `Processing ${processorType} files... This may take a few minutes.`);
+            elements.progressContainer.style.display = 'block';
+            elements.processBtn.disabled = true;
             
             try {
-                showStatus('Processing PDF files...', 'loading');
-                document.getElementById('progressBar').style.display = 'block';
+                if (currentTab === 'unis') {
+                    await processUNISLabels(elements);
+                } else if (currentTab === 'encore') {
+                    await processEncoreLabels(elements);
+                } else {
+                    await realPDFProcessing(elements, processorType);
+                }
+            } catch (error) {
+                console.error('Processing error:', error);
+                showStatus('error', 'Processing failed: ' + error.message);
+                elements.processBtn.disabled = false;
+                elements.progressContainer.style.display = 'none';
+            }
+        }
+
+        async function processEncoreLabels(elements) {
+            console.log('🚀 Starting Encore PDF processing');
+            
+            const currentFiles = getCurrentFiles();
+            const pdfFiles = currentFiles.filter(f => f.name.endsWith('.pdf'));
+            const zipFiles = currentFiles.filter(f => f.name.endsWith('.zip'));
+            
+            const allProcessedPDFs = {};
+            let progress = 0;
+            
+            // Process individual PDFs
+            for (let i = 0; i < pdfFiles.length; i++) {
+                const pdfFile = pdfFiles[i];
+                console.log('Processing Encore PDF:', pdfFile.name);
                 
-                processedFiles = [];
-                let processedCount = 0;
-                let skuAddedCount = 0;
+                progress = (i / (pdfFiles.length + zipFiles.length)) * 80;
+                elements.progressBar.style.width = progress + '%';
                 
-                const fileItems = document.querySelectorAll('.file-item .file-status');
+                const result = await processEncorePDF(pdfFile);
+                if (result) {
+                    allProcessedPDFs[result.filename] = result.pdfBytes;
+                }
+            }
+            
+            // Process ZIP files
+            for (let i = 0; i < zipFiles.length; i++) {
+                const zipFile = zipFiles[i];
+                console.log('Processing Encore ZIP:', zipFile.name);
                 
-                for (let i = 0; i < pdfFiles.length; i++) {
-                    const file = pdfFiles[i];
-                    updateProgress((i / pdfFiles.length) * 100);
+                progress = ((pdfFiles.length + i) / (pdfFiles.length + zipFiles.length)) * 80;
+                elements.progressBar.style.width = progress + '%';
+                
+                const results = await processEncoreZIP(zipFile);
+                Object.assign(allProcessedPDFs, results);
+            }
+            
+            // Create final ZIP
+            progress = 90;
+            elements.progressBar.style.width = progress + '%';
+            
+            const finalZip = new JSZip();
+            Object.keys(allProcessedPDFs).forEach(filename => {
+                finalZip.file(filename, allProcessedPDFs[filename]);
+            });
+            
+            const zipBlob = await finalZip.generateAsync({type: 'blob'});
+            
+            progress = 100;
+            elements.progressBar.style.width = progress + '%';
+            
+            // Download processed ZIP
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+            const filename = `Encore_processed_labels_${timestamp}.zip`;
+            
+            downloadZIP(zipBlob, filename);
+            
+            elements.progressContainer.style.display = 'none';
+            elements.processBtn.disabled = false;
+            
+            showStatus('success', `Encore processing complete! Downloaded ZIP contains ${Object.keys(allProcessedPDFs).length} PDFs with SKU overlays.`);
+        }
+
+        async function processEncorePDF(file) {
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const arrayBufferCopy = arrayBuffer.slice(0);
+                
+                // Extract FC from filename (first word before space or underscore)
+                const fcMatch = file.name.match(/^([^_\s]+)/);
+                const fc = fcMatch ? fcMatch[1].toUpperCase() : 'UNKNOWN';
+                console.log('📦 FC extracted from filename:', fc);
+                
+                // Extract text using PDF.js
+                const textData = await extractTextFromPDF(arrayBufferCopy);
+                console.log('📄 Extracted text from', textData.length, 'pages');
+                
+                // Load PDF for modification using PDF-lib
+                const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+                const pages = pdfDoc.getPages();
+                
+                let skusApplied = 0;
+                const pagesWithSKUs = []; // Store pages with their SKUs for sorting
+                
+                for (let pageIndex = 0; pageIndex < pages.length && pageIndex < textData.length; pageIndex++) {
+                    const page = pages[pageIndex];
+                    const pageData = textData[pageIndex];
                     
-                    try {
-                        const result = await processPDFFile(file);
-                        
-                        processedFiles.push({
-                            name: file.name.replace(/\.pdf$/i, '-SKU.pdf'),
-                            data: result.pdfData,
-                            originalName: file.name,
-                            skuAdded: result.skuAdded
-                        });
-                        
-                        processedCount++;
-                        if (result.skuAdded) {
-                            skuAddedCount++;
-                        }
-                        
-                        // Update file list display
-                        if (fileItems[i]) {
-                            fileItems[i].textContent = result.skuAdded ? 
-                                `✅ SKU: ${result.skuAdded}` : 
-                                '⚠️ No model found';
-                            fileItems[i].className = `file-status ${result.skuAdded ? 'success' : 'error'}`;
-                        }
-                        
-                    } catch (error) {
-                        console.error(`Error processing ${file.name}:`, error);
-                        
-                        // Add original file if processing fails
-                        processedFiles.push({
-                            name: file.name,
-                            data: file.data,
-                            originalName: file.name,
-                            skuAdded: null,
-                            error: true
-                        });
-                        
-                        if (fileItems[i]) {
-                            fileItems[i].textContent = '❌ Processing failed';
-                            fileItems[i].className = 'file-status error';
+                    let matchedSKU = null;
+                    
+                    // Try to match Model numbers first (highest priority for Encore)
+                    for (const model of pageData.models) {
+                        matchedSKU = findEncoreSKUByModel(model, fc);
+                        if (matchedSKU) {
+                            console.log(`✅ Encore Model Match: ${model} + ${fc} = ${matchedSKU}`);
+                            break;
                         }
                     }
+                    
+                    // If no model match, try UPC/EAN codes
+                    if (!matchedSKU) {
+                        for (const code of pageData.codes) {
+                            matchedSKU = findEncoreSKUMatch(code, fc);
+                            if (matchedSKU) {
+                                console.log(`✅ Encore UPC/EAN Match: ${code} + ${fc} = ${matchedSKU}`);
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // If no UPC/EAN match, try ASIN matching
+                    if (!matchedSKU) {
+                        for (const asin of pageData.asins) {
+                            matchedSKU = findEncoreSKUByASIN(asin, fc);
+                            if (matchedSKU) {
+                                console.log(`✅ Encore ASIN Match: ${asin} + ${fc} = ${matchedSKU}`);
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (matchedSKU) {
+                        // Overlay SKU on the page
+                        const font = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+                        page.drawText(`SKU: ${matchedSKU}`, {
+                            x: 7,
+                            y: 280,
+                            size: 6.7,
+                            font: font,
+                            color: PDFLib.rgb(0, 0, 0)
+                        });
+                        skusApplied++;
+                    } else {
+                        console.log(`❌ No match found for Encore page ${pageIndex + 1}`);
+                    }
+                    
+                    // Store page with its SKU (or null if no match) for sorting
+                    pagesWithSKUs.push({
+                        pageIndex: pageIndex,
+                        sku: matchedSKU,
+                        page: page
+                    });
                 }
                 
-                updateProgress(100);
+                console.log(`📊 Applied ${skusApplied} SKUs to ${pages.length} pages`);
                 
-                showStatus(`Processing complete! ${processedCount} files processed, ${skuAddedCount} SKUs added.`, 'success');
-                createDownloadButtons();
+                // Sort pages alphabetically by SKU
+                // Pages with SKUs come first (sorted alphabetically), then pages without SKUs
+                pagesWithSKUs.sort((a, b) => {
+                    if (a.sku === null && b.sku === null) return 0;
+                    if (a.sku === null) return 1; // Pages without SKUs go to the end
+                    if (b.sku === null) return -1;
+                    return a.sku.localeCompare(b.sku); // Alphabetical sort
+                });
+                
+                console.log('📑 Pages sorted alphabetically by SKU');
+                
+                // Create new PDF with sorted pages
+                const sortedPdfDoc = await PDFLib.PDFDocument.create();
+                
+                for (const pageData of pagesWithSKUs) {
+                    const [copiedPage] = await sortedPdfDoc.copyPages(pdfDoc, [pageData.pageIndex]);
+                    sortedPdfDoc.addPage(copiedPage);
+                }
+                
+                // Save the sorted PDF
+                const pdfBytes = await sortedPdfDoc.save();
+                const outputFilename = `${fc}_processed_sorted_${new Date().toISOString().slice(0,10)}.pdf`;
+                
+                return { filename: outputFilename, pdfBytes: pdfBytes };
                 
             } catch (error) {
-                showStatus('Error during processing: ' + error.message, 'error');
+                console.error('Error processing Encore PDF:', error);
+                return null;
             }
         }
-        
-        async function processPDFFile(file) {
-            // Load PDF
-            const pdfDoc = await PDFLib.PDFDocument.load(file.data);
-            const pages = pdfDoc.getPages();
-            
-            let skuAdded = null;
-            
-            // For each page, we'll try to extract text and add SKU
-            for (let pageIndex = 0; pageIndex < pages.length; pageIndex++) {
-                const page = pages[pageIndex];
+
+        async function processEncoreZIP(zipFile) {
+            try {
+                const zip = new JSZip();
+                const zipData = await zip.loadAsync(zipFile);
+                let allResults = {};
                 
-                try {
-                    // Since we can't easily extract text from PDFs in the browser,
-                    // we'll use a pattern-matching approach based on the filename or
-                    // add SKU in a consistent location
-                    
-                    // Try to match model numbers from the filename or use known patterns
-                    const modelNumber = extractModelNumberFromContent(file.name, pageIndex);
-                    
-                    if (modelNumber && modelToSkuMap[modelNumber]) {
-                        const sku = modelToSkuMap[modelNumber];
-                        await addSkuToPage(page, sku);
-                        skuAdded = sku;
+                for (let filename in zipData.files) {
+                    if (filename.endsWith('.pdf')) {
+                        const pdfData = await zipData.files[filename].async('arraybuffer');
+                        const mockFile = new File([pdfData], filename);
+                        const result = await processEncorePDF(mockFile);
+                        if (result) {
+                            allResults[result.filename] = result.pdfBytes;
+                        }
                     }
-                } catch (error) {
-                    console.warn(`Could not process page ${pageIndex + 1} in ${file.name}:`, error);
+                }
+                
+                return allResults;
+            } catch (error) {
+                console.error('Error processing Encore ZIP:', error);
+                return {};
+            }
+        }
+
+        function findEncoreSKUByModel(model, fc) {
+            if (!picklistData) return null;
+            
+            const originalModel = model.toUpperCase();
+            const variations = generateModelVariations(originalModel);
+            
+            console.log(`🔍 Searching for model variations with FC ${fc}:`, variations);
+            
+            // Try each primary variation with FC
+            for (const variant of variations) {
+                const match = picklistData.find(row => {
+                    const rowFC = (row['Fulfillment Center'] || row['Fulfilment Centre'] || row['FC'] || '').toString().trim().toUpperCase();
+                    const rowSKU = (row['SKU'] || '').toString().trim().toUpperCase();
+                    
+                    const fcMatch = rowFC === fc.toUpperCase();
+                    const skuMatch = rowSKU === variant;
+                    
+                    return fcMatch && skuMatch;
+                });
+                
+                if (match) {
+                    console.log(`✅ Model variation matched with FC: ${variant}`);
+                    return match.SKU;
                 }
             }
             
-            // Save the modified PDF
-            const pdfData = await pdfDoc.save();
-            
-            return {
-                pdfData: pdfData,
-                skuAdded: skuAdded
-            };
-        }
-        
-        function extractModelNumberFromContent(filename, pageIndex) {
-            // Based on your sample data, try to extract model numbers
-            // This is a simplified approach - in a real scenario, you'd extract from PDF content
-            
-            // Known model numbers from your example
-            const knownModels = [
-                '191719288671', '191719292708', '191719294856', '191719294221',
-                '191719292685', '191719294207', '191719294252', '191719288183'
-            ];
-            
-            // Try to match based on filename patterns or page index
-            // This is a simplified approach for demo purposes
-            if (pageIndex < knownModels.length) {
-                return knownModels[pageIndex];
+            // Try without FC constraint as fallback
+            for (const variant of variations) {
+                const match = picklistData.find(row => {
+                    const rowSKU = (row['SKU'] || '').toString().trim().toUpperCase();
+                    return rowSKU === variant;
+                });
+                
+                if (match) {
+                    console.log(`⚠️ Model matched without FC: ${variant}`);
+                    return match.SKU;
+                }
             }
             
-            // In a real implementation, you would:
-            // 1. Extract actual text content from the PDF
-            // 2. Use OCR if needed
-            // 3. Parse the content to find model numbers
+            // If still no match, try SM2C variations as last resort
+            console.log('🔄 Trying SM2C fallback variations...');
+            const sm2cVariations = generateSM2CVariations(originalModel);
+            
+            // Try SM2C variations with FC
+            for (const variant of sm2cVariations) {
+                const match = picklistData.find(row => {
+                    const rowFC = (row['Fulfillment Center'] || row['Fulfilment Centre'] || row['FC'] || '').toString().trim().toUpperCase();
+                    const rowSKU = (row['SKU'] || '').toString().trim().toUpperCase();
+                    
+                    const fcMatch = rowFC === fc.toUpperCase();
+                    const skuMatch = rowSKU === variant;
+                    
+                    return fcMatch && skuMatch;
+                });
+                
+                if (match) {
+                    console.log(`✅ SM2C variation matched with FC: ${variant}`);
+                    return match.SKU;
+                }
+            }
+            
+            // Try SM2C variations without FC
+            for (const variant of sm2cVariations) {
+                const match = picklistData.find(row => {
+                    const rowSKU = (row['SKU'] || '').toString().trim().toUpperCase();
+                    return rowSKU === variant;
+                });
+                
+                if (match) {
+                    console.log(`⚠️ SM2C matched without FC: ${variant}`);
+                    return match.SKU;
+                }
+            }
+            
+            return null;
+        }
+
+        function findEncoreSKUMatch(code, fc) {
+            if (!picklistData) return null;
+            
+            // Normalize the code
+            const normalizedCode = code.replace(/^0+/, '');
+            const originalCode = code;
+            
+            // Try exact match with FC
+            let match = picklistData.find(row => {
+                const rowFC = (row['Fulfillment Center'] || row['Fulfilment Centre'] || row['FC'] || '').toString().trim().toUpperCase();
+                const rowEAN = (row['EAN'] || '').toString().trim();
+                const rowUPC = (row['UPC'] || '').toString().trim();
+                const rowUPC13 = row['UPC_13'] || '';
+                
+                const fcMatch = rowFC === fc.toUpperCase();
+                
+                const codeMatch = 
+                    rowEAN === originalCode || 
+                    rowEAN === normalizedCode ||
+                    rowUPC === originalCode || 
+                    rowUPC === normalizedCode ||
+                    rowUPC13 === originalCode ||
+                    rowUPC13 === normalizedCode;
+                
+                return fcMatch && codeMatch;
+            });
+            
+            // If no match with FC, try without FC constraint
+            if (!match) {
+                match = picklistData.find(row => {
+                    const rowEAN = (row['EAN'] || '').toString().trim();
+                    const rowUPC = (row['UPC'] || '').toString().trim();
+                    const rowUPC13 = row['UPC_13'] || '';
+                    
+                    const codeMatch = 
+                        rowEAN === originalCode || 
+                        rowEAN === normalizedCode ||
+                        rowUPC === originalCode || 
+                        rowUPC === normalizedCode ||
+                        rowUPC13 === originalCode ||
+                        rowUPC13 === normalizedCode;
+                    
+                    return codeMatch;
+                });
+                
+                if (match) {
+                    console.log('⚠️ Encore match found without FC constraint');
+                }
+            }
+            
+            return match ? match.SKU : null;
+        }
+
+        function findEncoreSKUByASIN(asin, fc) {
+            if (!picklistData) return null;
+            
+            // Try exact match with FC first
+            let match = picklistData.find(row => {
+                const rowFC = (row['Fulfillment Center'] || row['Fulfilment Centre'] || row['FC'] || '').toString().trim().toUpperCase();
+                const rowASIN = (row['ASIN'] || '').toString().trim().toUpperCase();
+                
+                const fcMatch = rowFC === fc.toUpperCase();
+                const asinMatch = rowASIN === asin.toUpperCase();
+                
+                return fcMatch && asinMatch;
+            });
+            
+            // If no match with FC, try without FC constraint
+            if (!match) {
+                match = picklistData.find(row => {
+                    const rowASIN = (row['ASIN'] || '').toString().trim().toUpperCase();
+                    const asinMatch = rowASIN === asin.toUpperCase();
+                    return asinMatch;
+                });
+                
+                if (match) {
+                    console.log('⚠️ Encore ASIN match found without FC constraint');
+                }
+            }
+            
+            return match ? match.SKU : null;
+        }
+
+        async function processUNISLabels(elements) {
+            console.log('🚀 Starting UNIS PDF processing');
+            
+            const currentFiles = getCurrentFiles();
+            const pdfFiles = currentFiles.filter(f => f.name.endsWith('.pdf'));
+            const zipFiles = currentFiles.filter(f => f.name.endsWith('.zip'));
+            
+            const allProcessedPDFs = {};
+            let progress = 0;
+            
+            // Process individual PDFs
+            for (let i = 0; i < pdfFiles.length; i++) {
+                const pdfFile = pdfFiles[i];
+                console.log('Processing UNIS PDF:', pdfFile.name);
+                
+                progress = (i / (pdfFiles.length + zipFiles.length)) * 80;
+                elements.progressBar.style.width = progress + '%';
+                
+                const result = await processUNISPDF(pdfFile);
+                if (result) {
+                    allProcessedPDFs[result.filename] = result.pdfBytes;
+                }
+            }
+            
+            // Process ZIP files
+            for (let i = 0; i < zipFiles.length; i++) {
+                const zipFile = zipFiles[i];
+                console.log('Processing UNIS ZIP:', zipFile.name);
+                
+                progress = ((pdfFiles.length + i) / (pdfFiles.length + zipFiles.length)) * 80;
+                elements.progressBar.style.width = progress + '%';
+                
+                const results = await processUNISZIP(zipFile);
+                Object.assign(allProcessedPDFs, results);
+            }
+            
+            // Create final ZIP
+            progress = 90;
+            elements.progressBar.style.width = progress + '%';
+            
+            const finalZip = new JSZip();
+            Object.keys(allProcessedPDFs).forEach(filename => {
+                finalZip.file(filename, allProcessedPDFs[filename]);
+            });
+            
+            const zipBlob = await finalZip.generateAsync({type: 'blob'});
+            
+            progress = 100;
+            elements.progressBar.style.width = progress + '%';
+            
+            // Download processed ZIP
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+            const filename = `UNIS_processed_labels_${timestamp}.zip`;
+            
+            downloadZIP(zipBlob, filename);
+            
+            elements.progressContainer.style.display = 'none';
+            elements.processBtn.disabled = false;
+            
+            showStatus('success', `UNIS processing complete! Downloaded ZIP contains ${Object.keys(allProcessedPDFs).length} PDFs with SKU overlays.`);
+        }
+
+        async function processUNISPDF(file) {
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const arrayBufferCopy = arrayBuffer.slice(0);
+                
+                // Extract ARN from filename (first word before space or underscore)
+                const arnMatch = file.name.match(/^([^_\s]+)/);
+                const arn = arnMatch ? arnMatch[1].toUpperCase() : 'UNKNOWN';
+                console.log('📦 ARN extracted from filename:', arn);
+                
+                // Extract text using PDF.js
+                const textData = await extractTextFromPDF(arrayBufferCopy);
+                console.log('📄 Extracted text from', textData.length, 'pages');
+                
+                // Load PDF for modification using PDF-lib
+                const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+                const pages = pdfDoc.getPages();
+                
+                let skusApplied = 0;
+                
+                for (let pageIndex = 0; pageIndex < pages.length && pageIndex < textData.length; pageIndex++) {
+                    const page = pages[pageIndex];
+                    const pageData = textData[pageIndex];
+                    
+                    let matchedSKU = null;
+                    
+                    // Try to match Model numbers first (highest priority for UNIS)
+                    for (const model of pageData.models) {
+                        matchedSKU = findUNISSKUByModel(model, arn);
+                        if (matchedSKU) {
+                            console.log(`✅ UNIS Model Match: ${model} + ${arn} = ${matchedSKU}`);
+                            break;
+                        }
+                    }
+                    
+                    // If no model match, try UPC/EAN codes
+                    if (!matchedSKU) {
+                        for (const code of pageData.codes) {
+                            matchedSKU = findUNISSKUMatch(code, arn);
+                            if (matchedSKU) {
+                                console.log(`✅ UNIS UPC/EAN Match: ${code} + ${arn} = ${matchedSKU}`);
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // If no UPC/EAN match, try ASIN matching
+                    if (!matchedSKU) {
+                        for (const asin of pageData.asins) {
+                            matchedSKU = findUNISSKUByASIN(asin, arn);
+                            if (matchedSKU) {
+                                console.log(`✅ UNIS ASIN Match: ${asin} + ${arn} = ${matchedSKU}`);
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (matchedSKU) {
+                        // Overlay SKU on the page
+                        const font = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+                        page.drawText(`SKU: ${matchedSKU}`, {
+                            x: 7,
+                            y: 280,
+                            size: 6.7,
+                            font: font,
+                            color: PDFLib.rgb(0, 0, 0)
+                        });
+                        skusApplied++;
+                    } else {
+                        console.log(`❌ No match found for UNIS page ${pageIndex + 1}`);
+                    }
+                }
+                
+                console.log(`📊 Applied ${skusApplied} SKUs to ${pages.length} pages`);
+                
+                // Save the entire modified PDF as one file
+                const pdfBytes = await pdfDoc.save();
+                const outputFilename = `${arn}_processed_${new Date().toISOString().slice(0,10)}.pdf`;
+                
+                return { filename: outputFilename, pdfBytes: pdfBytes };
+                
+            } catch (error) {
+                console.error('Error processing UNIS PDF:', error);
+                return null;
+            }
+        }
+
+        async function processUNISZIP(zipFile) {
+            try {
+                const zip = new JSZip();
+                const zipData = await zip.loadAsync(zipFile);
+                let allResults = {};
+                
+                for (let filename in zipData.files) {
+                    if (filename.endsWith('.pdf')) {
+                        const pdfData = await zipData.files[filename].async('arraybuffer');
+                        const mockFile = new File([pdfData], filename);
+                        const result = await processUNISPDF(mockFile);
+                        if (result) {
+                            allResults[result.filename] = result.pdfBytes;
+                        }
+                    }
+                }
+                
+                return allResults;
+            } catch (error) {
+                console.error('Error processing UNIS ZIP:', error);
+                return {};
+            }
+        }
+
+        function findUNISSKUByModel(model, arn) {
+            if (!picklistData) return null;
+            
+            const originalModel = model.toUpperCase();
+            const variations = generateModelVariations(originalModel);
+            
+            console.log(`🔍 Searching for model variations:`, variations);
+            
+            // Try each primary variation with ARN
+            for (const variant of variations) {
+                const match = picklistData.find(row => {
+                    const rowARN = (row['ARN'] || '').toString().trim().toUpperCase();
+                    const rowSKU = (row['SKU'] || '').toString().trim().toUpperCase();
+                    
+                    const arnMatch = rowARN === arn.toUpperCase();
+                    const skuMatch = rowSKU === variant;
+                    
+                    return arnMatch && skuMatch;
+                });
+                
+                if (match) {
+                    console.log(`✅ Model variation matched: ${variant}`);
+                    return match.SKU;
+                }
+            }
+            
+            // Try without ARN constraint as fallback
+            for (const variant of variations) {
+                const match = picklistData.find(row => {
+                    const rowSKU = (row['SKU'] || '').toString().trim().toUpperCase();
+                    return rowSKU === variant;
+                });
+                
+                if (match) {
+                    console.log(`⚠️ Model matched without ARN: ${variant}`);
+                    return match.SKU;
+                }
+            }
+            
+            // If still no match, try SM2C variations as last resort
+            console.log('🔄 Trying SM2C fallback variations...');
+            const sm2cVariations = generateSM2CVariations(originalModel);
+            
+            // Try SM2C variations with ARN
+            for (const variant of sm2cVariations) {
+                const match = picklistData.find(row => {
+                    const rowARN = (row['ARN'] || '').toString().trim().toUpperCase();
+                    const rowSKU = (row['SKU'] || '').toString().trim().toUpperCase();
+                    
+                    const arnMatch = rowARN === arn.toUpperCase();
+                    const skuMatch = rowSKU === variant;
+                    
+                    return arnMatch && skuMatch;
+                });
+                
+                if (match) {
+                    console.log(`✅ SM2C variation matched: ${variant}`);
+                    return match.SKU;
+                }
+            }
+            
+            // Try SM2C variations without ARN
+            for (const variant of sm2cVariations) {
+                const match = picklistData.find(row => {
+                    const rowSKU = (row['SKU'] || '').toString().trim().toUpperCase();
+                    return rowSKU === variant;
+                });
+                
+                if (match) {
+                    console.log(`⚠️ SM2C matched without ARN: ${variant}`);
+                    return match.SKU;
+                }
+            }
             
             return null;
         }
         
-        async function addSkuToPage(page, sku) {
-            const { width, height } = page.getSize();
+        function generateModelVariations(model) {
+            const variations = [];
             
-            // Add SKU text at the bottom right of the page
-            // This positions it similar to your example where SKU appears at the end
-            page.drawText(sku, {
-                x: 50,
-                y: 50, // Bottom of the page
-                size: 11,
-                color: PDFLib.rgb(0, 0, 0),
-            });
-        }
-        
-        function createDownloadButtons() {
-            const downloadSection = document.getElementById('downloadSection');
-            const downloadButtons = document.getElementById('downloadButtons');
-            
-            downloadButtons.innerHTML = '';
-            
-            if (processedFiles.length > 1) {
-                // Create ZIP download for multiple files
-                const zipBtn = document.createElement('button');
-                zipBtn.className = 'btn success';
-                zipBtn.style.fontSize = '16px';
-                zipBtn.style.padding = '15px 30px';
-                zipBtn.style.marginBottom = '10px';
-                zipBtn.innerHTML = '📦 Download All as ZIP';
-                zipBtn.onclick = downloadAsZip;
-                downloadButtons.appendChild(zipBtn);
-                
-                downloadButtons.appendChild(document.createElement('br'));
+            // Handle double hyphen at the end (e.g., SKS-S-12-HB-PEP--BU → SKS-S-12-HB-PEP-BU)
+            let cleanedModel = model;
+            if (model.includes('--')) {
+                cleanedModel = model.replace(/--/g, '-');
+                console.log('🔧 Cleaned double hyphen:', model, '→', cleanedModel);
+                // Use cleaned version for all subsequent processing
+                model = cleanedModel;
             }
             
-            // Individual download buttons
-            processedFiles.forEach((file, index) => {
-                const btn = document.createElement('button');
-                btn.className = 'btn';
-                btn.textContent = `📄 ${file.name}`;
-                btn.onclick = () => downloadIndividualFile(file);
-                btn.style.margin = '5px';
-                downloadButtons.appendChild(btn);
-            });
+            // Enhanced Model SKU Matching Sequence (as per strict spec)
             
-            downloadSection.classList.add('show');
+            // 1. Try exact model as-is
+            variations.push(model);
+            
+            // 2. Try model + -M (if doesn't already end with -M)
+            if (!model.endsWith('-M')) {
+                variations.push(model + '-M');
+            }
+            
+            // 3. Handle numeric suffix (-1, -2, etc.) replacement with -M
+            const numericSuffixPattern = /-\d+$/;
+            if (numericSuffixPattern.test(model)) {
+                // Replace -1, -2, etc. with -M
+                const modelWithM = model.replace(numericSuffixPattern, '-M');
+                variations.push(modelWithM);
+                
+                // Also try without any suffix
+                const modelWithoutSuffix = model.replace(numericSuffixPattern, '');
+                variations.push(modelWithoutSuffix);
+                variations.push(modelWithoutSuffix + '-M');
+            }
+            
+            // 4. Handle TS- prefix patterns (e.g., TS-PS-12-HB-PEP-BU-M)
+            if (model.startsWith('SKS-') || model.startsWith('TS-')) {
+                // Try with TS- prefix if it starts with SKS-
+                if (model.startsWith('SKS-')) {
+                    const tsVersion = model.replace('SKS-', 'TS-P');
+                    variations.push(tsVersion);
+                    if (!tsVersion.endsWith('-M')) {
+                        variations.push(tsVersion + '-M');
+                    }
+                }
+                // Try with SKS- prefix if it starts with TS-
+                if (model.startsWith('TS-')) {
+                    const sksVersion = model.replace('TS-P', 'SKS-');
+                    variations.push(sksVersion);
+                    if (!sksVersion.endsWith('-M')) {
+                        variations.push(sksVersion + '-M');
+                    }
+                }
+            }
+            
+            // 5. Handle SMC prefix - convert to SM and SM2 variations
+            if (model.startsWith('SMC-')) {
+                // Replace SMC with SM
+                const smVersion = model.replace('SMC-', 'SM-');
+                variations.push(smVersion);
+                if (!smVersion.endsWith('-M')) {
+                    variations.push(smVersion + '-M');
+                }
+                // Handle numeric suffix for SM version
+                if (numericSuffixPattern.test(smVersion)) {
+                    variations.push(smVersion.replace(numericSuffixPattern, '-M'));
+                }
+                
+                // Replace SMC with SM2
+                const sm2Version = model.replace('SMC-', 'SM2-');
+                variations.push(sm2Version);
+                if (!sm2Version.endsWith('-M')) {
+                    variations.push(sm2Version + '-M');
+                }
+                // Handle numeric suffix for SM2 version
+                if (numericSuffixPattern.test(sm2Version)) {
+                    variations.push(sm2Version.replace(numericSuffixPattern, '-M'));
+                }
+            }
+            
+            // 6. If model starts with SM-, try SM2- and SMC- variations
+            if (model.startsWith('SM-')) {
+                const sm2Version = model.replace('SM-', 'SM2-');
+                variations.push(sm2Version);
+                
+                if (!sm2Version.endsWith('-M')) {
+                    variations.push(sm2Version + '-M');
+                }
+                // Handle numeric suffix for SM2 version
+                if (numericSuffixPattern.test(sm2Version)) {
+                    variations.push(sm2Version.replace(numericSuffixPattern, '-M'));
+                }
+                
+                const smcVersion = model.replace('SM-', 'SMC-');
+                variations.push(smcVersion);
+                if (!smcVersion.endsWith('-M')) {
+                    variations.push(smcVersion + '-M');
+                }
+                // Handle numeric suffix for SMC version
+                if (numericSuffixPattern.test(smcVersion)) {
+                    variations.push(smcVersion.replace(numericSuffixPattern, '-M'));
+                }
+            }
+            
+            // 7. If model starts with SM2-, try SM- and SMC- variations
+            if (model.startsWith('SM2-')) {
+                const smVersion = model.replace('SM2-', 'SM-');
+                variations.push(smVersion);
+                
+                if (!smVersion.endsWith('-M')) {
+                    variations.push(smVersion + '-M');
+                }
+                // Handle numeric suffix for SM version
+                if (numericSuffixPattern.test(smVersion)) {
+                    variations.push(smVersion.replace(numericSuffixPattern, '-M'));
+                }
+                
+                const smcVersion = model.replace('SM2-', 'SMC-');
+                variations.push(smcVersion);
+                if (!smcVersion.endsWith('-M')) {
+                    variations.push(smcVersion + '-M');
+                }
+                // Handle numeric suffix for SMC version
+                if (numericSuffixPattern.test(smcVersion)) {
+                    variations.push(smcVersion.replace(numericSuffixPattern, '-M'));
+                }
+            }
+            
+            // 8. If model ends with -M, also try removing -M and matching base model
+            if (model.endsWith('-M')) {
+                const baseModel = model.slice(0, -2);
+                variations.push(baseModel);
+                
+                // Also apply SM/SM2/SMC conversion to base model
+                if (baseModel.startsWith('SM-')) {
+                    variations.push(baseModel.replace('SM-', 'SM2-'));
+                    variations.push(baseModel.replace('SM-', 'SMC-'));
+                }
+                if (baseModel.startsWith('SM2-')) {
+                    variations.push(baseModel.replace('SM2-', 'SM-'));
+                    variations.push(baseModel.replace('SM2-', 'SMC-'));
+                }
+                if (baseModel.startsWith('SMC-')) {
+                    variations.push(baseModel.replace('SMC-', 'SM-'));
+                    variations.push(baseModel.replace('SMC-', 'SM2-'));
+                }
+                // Also check SKS/TS variations for base model
+                if (baseModel.startsWith('SKS-')) {
+                    variations.push(baseModel.replace('SKS-', 'TS-P'));
+                }
+                if (baseModel.startsWith('TS-')) {
+                    variations.push(baseModel.replace('TS-P', 'SKS-'));
+                }
+            }
+            
+            // 9. Generate combination variations for models with numeric suffixes
+            // This handles cases like SM-S-18-BR-2 → SM2-S-18-BR-M
+            if (numericSuffixPattern.test(model)) {
+                const baseWithoutNumber = model.replace(numericSuffixPattern, '');
+                
+                // Try all prefix variations with -M suffix
+                if (baseWithoutNumber.startsWith('SM-')) {
+                    variations.push(baseWithoutNumber.replace('SM-', 'SM2-') + '-M');
+                    variations.push(baseWithoutNumber.replace('SM-', 'SMC-') + '-M');
+                }
+                if (baseWithoutNumber.startsWith('SM2-')) {
+                    variations.push(baseWithoutNumber.replace('SM2-', 'SM-') + '-M');
+                    variations.push(baseWithoutNumber.replace('SM2-', 'SMC-') + '-M');
+                }
+                if (baseWithoutNumber.startsWith('SMC-')) {
+                    variations.push(baseWithoutNumber.replace('SMC-', 'SM-') + '-M');
+                    variations.push(baseWithoutNumber.replace('SMC-', 'SM2-') + '-M');
+                }
+                if (baseWithoutNumber.startsWith('SKS-')) {
+                    variations.push(baseWithoutNumber.replace('SKS-', 'TS-P') + '-M');
+                }
+                if (baseWithoutNumber.startsWith('TS-')) {
+                    variations.push(baseWithoutNumber.replace('TS-P', 'SKS-') + '-M');
+                }
+            }
+            
+            // Remove duplicates while preserving priority order
+            const seen = new Set();
+            const uniqueVariations = [];
+            for (const variant of variations) {
+                if (!seen.has(variant)) {
+                    seen.add(variant);
+                    uniqueVariations.push(variant);
+                }
+            }
+            
+            console.log('🔄 Generated model variations for', model, ':', uniqueVariations);
+            return uniqueVariations;
         }
         
-        async function downloadAsZip() {
-            try {
-                showStatus('Creating ZIP file...', 'loading');
+        // New function for SM2C fallback variations
+        function generateSM2CVariations(model) {
+            const variations = [];
+            const numericSuffixPattern = /-\d+$/;
+            
+            // Only generate SM2C variations if the model contains SM, SM2, or SMC prefixes
+            if (model.startsWith('SM-') || model.startsWith('SM2-') || model.startsWith('SMC-')) {
+                // Convert to SM2C
+                let sm2cVersion = '';
+                if (model.startsWith('SM-')) {
+                    sm2cVersion = model.replace('SM-', 'SM2C-');
+                } else if (model.startsWith('SM2-')) {
+                    sm2cVersion = model.replace('SM2-', 'SM2C-');
+                } else if (model.startsWith('SMC-')) {
+                    sm2cVersion = model.replace('SMC-', 'SM2C-');
+                }
                 
-                const zip = new JSZip();
+                if (sm2cVersion) {
+                    variations.push(sm2cVersion);
+                    if (!sm2cVersion.endsWith('-M')) {
+                        variations.push(sm2cVersion + '-M');
+                    }
+                    // Handle numeric suffix
+                    if (numericSuffixPattern.test(sm2cVersion)) {
+                        variations.push(sm2cVersion.replace(numericSuffixPattern, '-M'));
+                    }
+                }
+            }
+            
+            // If model starts with SM2C-, try converting to other formats
+            if (model.startsWith('SM2C-')) {
+                variations.push(model.replace('SM2C-', 'SM-'));
+                variations.push(model.replace('SM2C-', 'SM2-'));
+                variations.push(model.replace('SM2C-', 'SMC-'));
                 
-                processedFiles.forEach(file => {
-                    zip.file(file.name, file.data);
+                if (!model.endsWith('-M')) {
+                    variations.push(model.replace('SM2C-', 'SM-') + '-M');
+                    variations.push(model.replace('SM2C-', 'SM2-') + '-M');
+                    variations.push(model.replace('SM2C-', 'SMC-') + '-M');
+                }
+            }
+            
+            console.log('🔄 SM2C fallback variations for', model, ':', variations);
+            return variations;
+        }
+
+        function findUNISSKUMatch(code, arn) {
+            if (!picklistData) return null;
+            
+            // Normalize the code - remove leading zeros for comparison
+            const normalizedCode = code.replace(/^0+/, '');
+            const originalCode = code;
+            
+            // Try exact match with ARN
+            let match = picklistData.find(row => {
+                const rowARN = (row['ARN'] || '').toString().trim().toUpperCase();
+                const rowEAN = (row['EAN'] || '').toString().trim();
+                const rowUPC = (row['UPC'] || '').toString().trim();
+                const rowUPC13 = row['UPC_13'] || '';
+                
+                // Check if ARN matches
+                const arnMatch = rowARN === arn.toUpperCase();
+                
+                // Check if code matches (try multiple formats)
+                const codeMatch = 
+                    rowEAN === originalCode || 
+                    rowEAN === normalizedCode ||
+                    rowUPC === originalCode || 
+                    rowUPC === normalizedCode ||
+                    rowUPC13 === originalCode ||
+                    rowUPC13 === normalizedCode;
+                
+                return arnMatch && codeMatch;
+            });
+            
+            // If no match with ARN, try without ARN constraint (fallback)
+            if (!match) {
+                match = picklistData.find(row => {
+                    const rowEAN = (row['EAN'] || '').toString().trim();
+                    const rowUPC = (row['UPC'] || '').toString().trim();
+                    const rowUPC13 = row['UPC_13'] || '';
+                    
+                    const codeMatch = 
+                        rowEAN === originalCode || 
+                        rowEAN === normalizedCode ||
+                        rowUPC === originalCode || 
+                        rowUPC === normalizedCode ||
+                        rowUPC13 === originalCode ||
+                        rowUPC13 === normalizedCode;
+                    
+                    return codeMatch;
                 });
                 
-                const zipData = await zip.generateAsync({type: 'blob'});
+                if (match) {
+                    console.log('⚠️ UNIS match found without ARN constraint');
+                }
+            }
+            
+            return match ? match.SKU : null;
+        }
+
+        function findUNISSKUByASIN(asin, arn) {
+            if (!picklistData) return null;
+            
+            // Try exact match with ARN first
+            let match = picklistData.find(row => {
+                const rowARN = (row['ARN'] || '').toString().trim().toUpperCase();
+                const rowASIN = (row['ASIN'] || '').toString().trim().toUpperCase();
                 
-                const url = URL.createObjectURL(zipData);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'carton-labels-with-sku.zip';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
+                const arnMatch = rowARN === arn.toUpperCase();
+                const asinMatch = rowASIN === asin.toUpperCase();
                 
-                showStatus('ZIP download started!', 'success');
+                return arnMatch && asinMatch;
+            });
+            
+            // If no match with ARN, try without ARN constraint
+            if (!match) {
+                match = picklistData.find(row => {
+                    const rowASIN = (row['ASIN'] || '').toString().trim().toUpperCase();
+                    const asinMatch = rowASIN === asin.toUpperCase();
+                    return asinMatch;
+                });
+                
+                if (match) {
+                    console.log('⚠️ UNIS ASIN match found without ARN constraint');
+                }
+            }
+            
+            return match ? match.SKU : null;
+        }
+
+        async function extractTextFromPDF(arrayBuffer) {
+            try {
+                const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+                const pageTextData = [];
+                
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+                    const pageText = textContent.items.map(item => item.str).join(' ');
+                    
+                    // For UNIS: Try structured line-by-line parsing first
+                    const lines = pageText.split(/\s{2,}|\n/).filter(l => l.trim());
+                    let extractedModelOrUPC = null;
+                    let isNumericModel = false;
+                    
+                    // Primary Method: Look for "Model :" pattern
+                    for (let j = 0; j < lines.length; j++) {
+                        if (lines[j].includes('Model :')) {
+                            const collectedLines = [];
+                            let k = j + 1;
+                            
+                            while (k < lines.length) {
+                                const nextLine = lines[k].trim();
+                                if (nextLine === '' || 
+                                    /^(Qty|Carton#|UPC|Code|Amazon|Description|Item|Product)/i.test(nextLine)) {
+                                    break;
+                                }
+                                collectedLines.push(nextLine);
+                                k++;
+                            }
+                            
+                            if (collectedLines.length > 0) {
+                                let model = collectedLines[0];
+                                if (model.endsWith('-') && collectedLines.length > 1) {
+                                    model = model.slice(0, -1) + collectedLines[1];
+                                }
+                                extractedModelOrUPC = model.trim();
+                                isNumericModel = /^\d+$/.test(extractedModelOrUPC);
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Fallback Method: Look for "UPC :" if no Model found
+                    let fallbackUPC = null;
+                    if (!extractedModelOrUPC) {
+                        for (let j = 0; j < lines.length; j++) {
+                            if (lines[j].includes('UPC :')) {
+                                // Look for first numeric line after UPC :
+                                for (let k = j + 1; k < lines.length && k < j + 5; k++) {
+                                    const nextLine = lines[k].trim();
+                                    if (/^\d{10,13}$/.test(nextLine)) {
+                                        fallbackUPC = nextLine;
+                                        break;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Extract standard UPC/EAN codes (12-13 digit numbers)
+                    const upcPattern = /\b\d{12,13}\b/g;
+                    let codes = pageText.match(upcPattern) || [];
+                    
+                    // Add numeric model or fallback UPC to codes if applicable
+                    if (isNumericModel && extractedModelOrUPC) {
+                        codes.unshift(extractedModelOrUPC);
+                    } else if (fallbackUPC) {
+                        codes.unshift(fallbackUPC);
+                    }
+                    
+                    // Extract ASIN (B0 followed by 8 alphanumeric characters)
+                    const asinPattern = /\bB0[A-Z0-9]{8}\b/g;
+                    const asins = pageText.match(asinPattern) || [];
+                    
+                    // Extract Model numbers (non-numeric only)
+                    const models = [];
+                    if (extractedModelOrUPC && !isNumericModel) {
+                        models.push(extractedModelOrUPC.toUpperCase());
+                    }
+                    // Also use the general extraction for additional models
+                    const additionalModels = extractModelNumbers(pageText);
+                    additionalModels.forEach(m => {
+                        if (!models.includes(m)) models.push(m);
+                    });
+                    
+                    // Extract PO numbers (8-character alphanumeric, excluding ASINs)
+                    const poPattern = /\b[A-Z0-9]{8}\b/g;
+                    const potentialPOs = pageText.match(poPattern) || [];
+                    const po = potentialPOs.find(p => 
+                        /[A-Z]/.test(p) && /[0-9]/.test(p) && !p.startsWith('B0')
+                    ) || 'UNKNOWN';
+                    
+                    pageTextData.push({
+                        pageIndex: i - 1,
+                        text: pageText,
+                        codes: codes,
+                        asins: asins,
+                        models: models,
+                        po: po
+                    });
+                    
+                    console.log(`Page ${i} - UPC/EAN codes:`, codes);
+                    console.log(`Page ${i} - ASINs:`, asins);
+                    console.log(`Page ${i} - Models:`, models);
+                    console.log(`Page ${i} - PO:`, po);
+                }
+                
+                return pageTextData;
+            } catch (error) {
+                console.error('Error extracting text:', error);
+                return [];
+            }
+        }
+
+        function extractModelNumbers(text) {
+            const models = [];
+            
+            // Strict Mode: Split text into lines for line-by-line processing
+            const lines = text.split(/\r?\n|\r/);
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                
+                // Look for "Model :" (with space before colon as per spec)
+                if (line.includes('Model :')) {
+                    console.log('📍 Found "Model :" at line', i, ':', line);
+                    
+                    // Start collecting lines after "Model :"
+                    const collectedLines = [];
+                    let j = i + 1;
+                    
+                    while (j < lines.length) {
+                        const nextLine = lines[j].trim();
+                        
+                        // Stop conditions
+                        if (nextLine === '' || 
+                            /^(Qty|Carton#|UPC|Code|Amazon|Description|Item|Product)/i.test(nextLine)) {
+                            console.log('🛑 Stopping at line', j, ':', nextLine);
+                            break;
+                        }
+                        
+                        collectedLines.push(nextLine);
+                        j++;
+                    }
+                    
+                    if (collectedLines.length > 0) {
+                        // Apply hyphen rule: if first line ends with hyphen, concatenate directly
+                        let model = collectedLines[0];
+                        
+                        if (model.endsWith('-') && collectedLines.length > 1) {
+                            // Remove hyphen and append next line directly
+                            model = model.slice(0, -1) + collectedLines[1];
+                            console.log('📐 Applied hyphen rule:', collectedLines[0], '+', collectedLines[1], '=', model);
+                        } else if (collectedLines.length > 1) {
+                            // Otherwise concatenate all lines with space
+                            model = collectedLines.join(' ');
+                        }
+                        
+                        model = model.trim().toUpperCase();
+                        
+                        // Check if result is non-numeric (model) or numeric (UPC)
+                        if (!/^\d+$/.test(model)) {
+                            // Non-numeric - it's a model
+                            models.push(model);
+                            console.log('✅ Extracted model:', model);
+                        } else {
+                            console.log('📊 Numeric value found, will be handled as UPC:', model);
+                        }
+                    }
+                }
+            }
+            
+            // Fallback: Also look for inline Model patterns (backward compatibility)
+            const modelPattern = /Model:\s*([A-Z0-9\-]+)/gi;
+            const modelMatches = text.matchAll(modelPattern);
+            
+            for (const match of modelMatches) {
+                if (match[1] && !models.includes(match[1].toUpperCase())) {
+                    models.push(match[1].toUpperCase());
+                }
+            }
+            
+            return models;
+        }
+
+        async function realPDFProcessing(elements, processorType) {
+            console.log('🚀 Starting real PDF processing for:', processorType);
+            
+            const currentFiles = getCurrentFiles();
+            const pdfFiles = currentFiles.filter(f => f.name.endsWith('.pdf'));
+            const zipFiles = currentFiles.filter(f => f.name.endsWith('.zip'));
+            
+            const allProcessedPDFs = {};
+            let progress = 0;
+            
+            // Process individual PDFs
+            for (let i = 0; i < pdfFiles.length; i++) {
+                const pdfFile = pdfFiles[i];
+                console.log('Processing PDF:', pdfFile.name);
+                
+                progress = (i / (pdfFiles.length + zipFiles.length)) * 80;
+                elements.progressBar.style.width = progress + '%';
+                
+                const results = await processPDFWithSKUs(pdfFile);
+                Object.assign(allProcessedPDFs, results);
+            }
+            
+            // Process ZIP files
+            for (let i = 0; i < zipFiles.length; i++) {
+                const zipFile = zipFiles[i];
+                console.log('Processing ZIP:', zipFile.name);
+                
+                progress = ((pdfFiles.length + i) / (pdfFiles.length + zipFiles.length)) * 80;
+                elements.progressBar.style.width = progress + '%';
+                
+                const results = await processZIPWithSKUs(zipFile);
+                Object.assign(allProcessedPDFs, results);
+            }
+            
+            // Create final ZIP
+            progress = 90;
+            elements.progressBar.style.width = progress + '%';
+            
+            const finalZip = new JSZip();
+            Object.keys(allProcessedPDFs).forEach(filename => {
+                finalZip.file(filename, allProcessedPDFs[filename]);
+            });
+            
+            const zipBlob = await finalZip.generateAsync({type: 'blob'});
+            
+            progress = 100;
+            elements.progressBar.style.width = progress + '%';
+            
+            // Download processed ZIP
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+            const filename = `${processorType}_processed_labels_${timestamp}.zip`;
+            
+            downloadZIP(zipBlob, filename);
+            
+            elements.progressContainer.style.display = 'none';
+            elements.processBtn.disabled = false;
+            
+            showStatus('success', `${processorType} processing complete! Downloaded ZIP contains ${Object.keys(allProcessedPDFs).length} PDFs grouped by PO with SKU overlays.`);
+        }
+
+        async function processPDFWithSKUs(file) {
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const arrayBufferCopy = arrayBuffer.slice(0);
+                
+                // Extract text using PDF.js
+                const textData = await extractTextFromPDF(arrayBufferCopy);
+                console.log('📄 Extracted text from', textData.length, 'pages');
+                
+                // Load PDF for modification using PDF-lib
+                const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+                const fc = file.name.substring(0, 4).toUpperCase();
+                
+                const processedPages = [];
+                const pages = pdfDoc.getPages();
+                
+                for (let pageIndex = 0; pageIndex < pages.length && pageIndex < textData.length; pageIndex++) {
+                    const page = pages[pageIndex];
+                    const pageData = textData[pageIndex];
+                    
+                    let matchedSKU = null;
+                    
+                    // Try to match UPC/EAN codes first
+                    for (const code of pageData.codes) {
+                        matchedSKU = findSKUMatch(code, fc, pageData.po);
+                        if (matchedSKU) {
+                            console.log(`✅ UPC/EAN Match: ${code} + ${fc} + ${pageData.po} = ${matchedSKU}`);
+                            break;
+                        }
+                    }
+                    
+                    // If no UPC/EAN match, try ASIN matching
+                    if (!matchedSKU) {
+                        for (const asin of pageData.asins) {
+                            matchedSKU = findSKUByASIN(asin, fc, pageData.po);
+                            if (matchedSKU) {
+                                console.log(`✅ ASIN Match: ${asin} + ${fc} + ${pageData.po} = ${matchedSKU}`);
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (matchedSKU) {
+                        // Overlay SKU on the page
+                        const font = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+                        page.drawText(`SKU: ${matchedSKU}`, {
+                            x: 7,
+                            y: 280,
+                            size: 6.7,
+                            font: font,
+                            color: PDFLib.rgb(0, 0, 0)
+                        });
+                        
+                        processedPages.push({ 
+                            pageIndex, 
+                            po: pageData.po, 
+                            fc, 
+                            sku: matchedSKU, 
+                            page 
+                        });
+                    } else {
+                        console.log(`❌ No match found for page ${pageIndex + 1}`);
+                        // Still include the page even without SKU overlay
+                        processedPages.push({ 
+                            pageIndex, 
+                            po: pageData.po, 
+                            fc, 
+                            sku: null, 
+                            page 
+                        });
+                    }
+                }
+                
+                // Group by PO and create separate PDFs
+                const poGroups = {};
+                processedPages.forEach(pageData => {
+                    const key = `${pageData.fc}_${pageData.po}`;
+                    if (!poGroups[key]) poGroups[key] = [];
+                    poGroups[key].push(pageData);
+                });
+                
+                const results = {};
+                for (const [poKey, pageGroup] of Object.entries(poGroups)) {
+                    const newPdf = await PDFLib.PDFDocument.create();
+                    
+                    for (const pageData of pageGroup) {
+                        const [copiedPage] = await newPdf.copyPages(pdfDoc, [pageData.pageIndex]);
+                        newPdf.addPage(copiedPage);
+                    }
+                    
+                    const pdfBytes = await newPdf.save();
+                    const filename = `${poKey}_${new Date().toISOString().slice(0,10)}_CL.pdf`;
+                    results[filename] = pdfBytes;
+                }
+                
+                return results;
                 
             } catch (error) {
-                showStatus('Error creating ZIP: ' + error.message, 'error');
+                console.error('Error processing PDF:', error);
+                return {};
             }
         }
-        
-        function downloadIndividualFile(file) {
-            const blob = new Blob([file.data], { type: 'application/pdf' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = file.name;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+
+        async function processZIPWithSKUs(zipFile) {
+            try {
+                const zip = new JSZip();
+                const zipData = await zip.loadAsync(zipFile);
+                let allResults = {};
+                
+                for (let filename in zipData.files) {
+                    if (filename.endsWith('.pdf')) {
+                        const pdfData = await zipData.files[filename].async('arraybuffer');
+                        const mockFile = new File([pdfData], filename);
+                        const results = await processPDFWithSKUs(mockFile);
+                        Object.assign(allResults, results);
+                    }
+                }
+                
+                return allResults;
+            } catch (error) {
+                console.error('Error processing ZIP:', error);
+                return {};
+            }
+        }
+
+        function findSKUByASIN(asin, fc, po) {
+            if (!picklistData) return null;
+            
+            // Try exact match with FC and PO first
+            let match = picklistData.find(row => {
+                const rowFC = (row['Fulfilment Centre'] || row['FC'] || '').toString().trim().toUpperCase();
+                const rowPO = (row['Order/PO number'] || row['PO number'] || row['PO'] || '').toString().trim().toUpperCase();
+                const rowASIN = (row['ASIN'] || '').toString().trim().toUpperCase();
+                
+                const fcMatch = rowFC === fc.toUpperCase();
+                const poMatch = !rowPO || rowPO === po.toUpperCase() || po === 'UNKNOWN';
+                const asinMatch = rowASIN === asin.toUpperCase();
+                
+                return fcMatch && poMatch && asinMatch;
+            });
+            
+            // If no match with PO, try without PO constraint
+            if (!match) {
+                match = picklistData.find(row => {
+                    const rowFC = (row['Fulfilment Centre'] || row['FC'] || '').toString().trim().toUpperCase();
+                    const rowASIN = (row['ASIN'] || '').toString().trim().toUpperCase();
+                    
+                    const fcMatch = rowFC === fc.toUpperCase();
+                    const asinMatch = rowASIN === asin.toUpperCase();
+                    
+                    return fcMatch && asinMatch;
+                });
+                
+                if (match) {
+                    console.log('⚠️ ASIN match found without PO constraint');
+                }
+            }
+            
+            return match ? match.SKU : null;
+        }
+
+        function findSKUMatch(code, fc, po) {
+            if (!picklistData) return null;
+            
+            // Normalize the code - remove leading zeros for comparison
+            const normalizedCode = code.replace(/^0+/, '');
+            const originalCode = code;
+            
+            // Try exact match first
+            let match = picklistData.find(row => {
+                const rowFC = (row['Fulfilment Centre'] || row['FC'] || '').toString().trim().toUpperCase();
+                const rowPO = (row['Order/PO number'] || row['PO number'] || row['PO'] || '').toString().trim().toUpperCase();
+                const rowEAN = (row['EAN'] || '').toString().trim();
+                const rowUPC = (row['UPC'] || '').toString().trim();
+                const rowUPC13 = row['UPC_13'] || '';
+                
+                // Check if FC matches
+                const fcMatch = rowFC === fc.toUpperCase();
+                
+                // Check if PO matches (or if no PO in picklist)
+                const poMatch = !rowPO || rowPO === po.toUpperCase() || po === 'UNKNOWN';
+                
+                // Check if code matches (try multiple formats)
+                const codeMatch = 
+                    rowEAN === originalCode || 
+                    rowEAN === normalizedCode ||
+                    rowUPC === originalCode || 
+                    rowUPC === normalizedCode ||
+                    rowUPC13 === originalCode ||
+                    rowUPC13 === normalizedCode;
+                
+                return fcMatch && poMatch && codeMatch;
+            });
+            
+            // If no match with PO, try without PO constraint
+            if (!match) {
+                match = picklistData.find(row => {
+                    const rowFC = (row['Fulfilment Centre'] || row['FC'] || '').toString().trim().toUpperCase();
+                    const rowEAN = (row['EAN'] || '').toString().trim();
+                    const rowUPC = (row['UPC'] || '').toString().trim();
+                    const rowUPC13 = row['UPC_13'] || '';
+                    
+                    const fcMatch = rowFC === fc.toUpperCase();
+                    const codeMatch = 
+                        rowEAN === originalCode || 
+                        rowEAN === normalizedCode ||
+                        rowUPC === originalCode || 
+                        rowUPC === normalizedCode ||
+                        rowUPC13 === originalCode ||
+                        rowUPC13 === normalizedCode;
+                    
+                    return fcMatch && codeMatch;
+                });
+                
+                if (match) {
+                    console.log('⚠️ Match found without PO constraint');
+                }
+            }
+            
+            return match ? match.SKU : null;
+        }
+
+        function downloadZIP(zipBlob, filename) {
+            const url = URL.createObjectURL(zipBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
             URL.revokeObjectURL(url);
         }
-        
-        function updateProgress(percent) {
-            const progressFill = document.getElementById('progressFill');
-            progressFill.style.width = percent + '%';
+
+        function showStatus(type, message) {
+            const elements = getCurrentElements();
+            elements.statusMessage.className = `status ${type}`;
+            elements.statusMessage.innerHTML = message;
+            elements.statusMessage.style.display = 'block';
         }
-        
-        function showStatus(message, type) {
-            const statusSection = document.getElementById('statusSection');
-            const statusMessage = document.getElementById('statusMessage');
-            
-            statusMessage.textContent = message;
-            statusSection.className = `status-section show ${type}`;
-            
-            if (type !== 'loading') {
-                document.getElementById('progressBar').style.display = 'none';
-            }
+
+        function hideStatus() {
+            const elements = getCurrentElements();
+            elements.statusMessage.style.display = 'none';
         }
     </script>
 </body>
