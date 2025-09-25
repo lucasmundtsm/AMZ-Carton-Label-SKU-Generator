@@ -403,9 +403,25 @@
         function normalizePicklistData(data) {
             console.log('🔄 Starting comprehensive picklist normalization...');
             
+            // Create a mapping function for case-insensitive column access
+            function getColumnValue(row, ...possibleKeys) {
+                for (const key of possibleKeys) {
+                    // Check exact match first
+                    if (row[key] !== undefined) return row[key];
+                    
+                    // Then check case-insensitive match
+                    const matchedKey = Object.keys(row).find(k => 
+                        k.toLowerCase() === key.toLowerCase()
+                    );
+                    if (matchedKey) return row[matchedKey];
+                }
+                return '';
+            }
+            
             return data.map(row => {
                 const normalized = {};
                 
+                // Copy all original columns with their values
                 Object.keys(row).forEach(key => {
                     let value = row[key];
                     if (value !== null && value !== undefined) {
@@ -419,9 +435,11 @@
                     normalized[key] = value;
                 });
                 
-                // Normalize UPC codes
-                if (normalized.UPC) {
-                    let upc = normalized.UPC.toString().trim().replace(/\D/g, '');
+                // Normalize common columns with case-insensitive lookup
+                // Handle UPC
+                const upcValue = getColumnValue(row, 'UPC', 'upc', 'Upc');
+                if (upcValue) {
+                    let upc = upcValue.toString().trim().replace(/\D/g, '');
                     if (upc.length === 12) {
                         normalized.UPC = upc;
                         normalized.UPC_13 = '0' + upc;
@@ -433,36 +451,62 @@
                     }
                 }
                 
-                // Normalize EAN codes
-                if (normalized.EAN) {
-                    let ean = normalized.EAN.toString().trim().replace(/\D/g, '');
+                // Handle EAN (also check External ID column)
+                const eanValue = getColumnValue(row, 
+                    'EAN', 'ean', 'Ean', 
+                    'External ID', 'external id', 'External id', 'EXTERNAL ID', 'ExternalID', 'externalid'
+                );
+                if (eanValue) {
+                    let ean = eanValue.toString().trim().replace(/\D/g, '');
                     if (ean.length > 0 && ean.length < 13) {
                         ean = ean.padStart(13, '0');
                     }
                     normalized.EAN = ean;
                 }
                 
-                // Normalize FC
-                if (normalized['Fulfilment Centre']) {
-                    normalized['Fulfilment Centre'] = normalized['Fulfilment Centre'].toString().trim().toUpperCase();
-                }
-                if (normalized['Fulfillment Center']) {
-                    normalized['Fulfillment Center'] = normalized['Fulfillment Center'].toString().trim().toUpperCase();
-                }
-                
-                // Normalize PO
-                if (normalized['Order/PO number']) {
-                    normalized['Order/PO number'] = normalized['Order/PO number'].toString().trim().toUpperCase();
+                // Handle Fulfillment/Fulfilment Centre/Center variations
+                const fcValue = getColumnValue(row, 
+                    'Fulfillment Center', 'Fulfilment Centre', 'Fulfillment Centre', 'Fulfilment Center',
+                    'FC', 'fc', 'Fc', 'fulfillment center', 'fulfilment centre'
+                );
+                if (fcValue) {
+                    normalized['Fulfilment Centre'] = fcValue.toString().trim().toUpperCase();
+                    normalized['Fulfillment Center'] = fcValue.toString().trim().toUpperCase();
+                    normalized['FC'] = fcValue.toString().trim().toUpperCase();
                 }
                 
-                // Normalize ASIN
-                if (normalized.ASIN) {
-                    normalized.ASIN = normalized.ASIN.toString().trim().toUpperCase();
+                // Handle PO/Order variations
+                const poValue = getColumnValue(row, 
+                    'Order/PO number', 'PO number', 'PO', 'Order', 'order/po number',
+                    'po number', 'po', 'order', 'Order/PO Number', 'PO Number'
+                );
+                if (poValue) {
+                    normalized['Order/PO number'] = poValue.toString().trim().toUpperCase();
+                    normalized['PO'] = poValue.toString().trim().toUpperCase();
                 }
                 
-                // Normalize ARN
-                if (normalized.ARN) {
-                    normalized.ARN = normalized.ARN.toString().trim().toUpperCase();
+                // Handle ASIN
+                const asinValue = getColumnValue(row, 'ASIN', 'asin', 'Asin');
+                if (asinValue) {
+                    normalized.ASIN = asinValue.toString().trim().toUpperCase();
+                }
+                
+                // Handle ARN
+                const arnValue = getColumnValue(row, 'ARN', 'arn', 'Arn');
+                if (arnValue) {
+                    normalized.ARN = arnValue.toString().trim().toUpperCase();
+                }
+                
+                // Handle SKU
+                const skuValue = getColumnValue(row, 'SKU', 'sku', 'Sku');
+                if (skuValue) {
+                    normalized.SKU = skuValue.toString().trim();
+                }
+                
+                // Handle UCC
+                const uccValue = getColumnValue(row, 'UCC', 'ucc', 'Ucc');
+                if (uccValue) {
+                    normalized.UCC = uccValue.toString().trim();
                 }
                 
                 return normalized;
