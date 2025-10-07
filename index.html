@@ -106,7 +106,7 @@
     <div class="container">
         <div class="header">
             <h1>SM Amazon +SKU Label Processor</h1>
-            <p>Automated label processing with SKU overlay and PO splitting - Now with ASIN support</p>
+            <p>Automated label processing with SKU overlay</p>
         </div>
         <div class="main-content">
             <div class="processor-tabs">
@@ -117,12 +117,11 @@
 
             <div class="processor-section active" id="eu-section">
                 <div class="requirements">
-                    <h3>File Requirements for Amazon EU Labels</h3>
+                    <h3>File Requirements for EU Amazon Labels</h3>
                     <ul>
-                        <li><strong>Picklist File:</strong> Excel (.xlsx) or CSV with columns: Order/PO number, Fulfilment Centre, UCC, UPC, EAN, ASIN, SKU</li>
+                        <li><strong>PO Upload file:</strong> Generated PO Worksheet File</li>
                         <li><strong>Amazon EU Label PDFs:</strong> Individual PDF files or ZIP archive containing multiple PDFs</li>
                         <li><strong>Filename Format:</strong> First 4 characters should indicate Fulfilment Centre (FC)</li>
-                        <li><strong>Processing:</strong> Matches UPC/EAN/ASIN codes, groups labels by PO number, overlays SKU at (x=7, y=280), outputs separate PDFs per PO</li>
                     </ul>
                 </div>
                 <div class="upload-section">
@@ -148,11 +147,9 @@
                 <div class="requirements">
                     <h3>File Requirements for UNIS Amazon Labels</h3>
                     <ul>
-                        <li><strong>Picklist File:</strong> Excel (.xlsx) or CSV with columns: ARN, UPC, EAN, ASIN, SKU</li>
+                        <li><strong>PO Upload file:</strong> Generated PO Worksheet File with ARN</li>
                         <li><strong>Amazon Carton Label PDFs:</strong> Individual PDF files or ZIP archive containing multiple PDFs</li>
                         <li><strong>Filename Format:</strong> First word before space/underscore should be ARN</li>
-                        <li><strong>Processing:</strong> Extracts Model numbers, UPC/EAN/ASIN codes, handles SM-/SM2- conversions and -M suffix variations</li>
-                        <li><strong>Model Matching:</strong> Automatically converts between SM- and SM2- prefixes, handles -M suffix additions/removals</li>
                     </ul>
                 </div>
                 <div class="upload-section">
@@ -178,11 +175,9 @@
                 <div class="requirements">
                     <h3>File Requirements for Encore Amazon Labels</h3>
                     <ul>
-                        <li><strong>Picklist File:</strong> Excel (.xlsx) or CSV with columns: Fulfillment Center, UPC, SKU (tab named 'picklist')</li>
+                        <li><strong>PO Upload file:</strong> Generated PO Worksheet File</li>
                         <li><strong>Amazon Carton Label PDFs:</strong> Individual PDF files or ZIP archive containing multiple PDFs</li>
                         <li><strong>Filename Format:</strong> First word before space/underscore should be Fulfillment Center</li>
-                        <li><strong>Processing:</strong> Dual match logic with model/UPC extraction, per-file SKU sorting, clean overlay at (x=7, y=280)</li>
-                        <li><strong>Enhanced Features:</strong> Same-line model extraction, hyphen continuation, per-page processing without carry-over</li>
                     </ul>
                 </div>
                 <div class="upload-section">
