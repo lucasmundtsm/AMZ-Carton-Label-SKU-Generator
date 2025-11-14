@@ -1283,7 +1283,35 @@
                 }
             }
             
-            // 5. Handle SMC prefix - convert to SM and SM2 variations
+            // 5. Handle VYM-SK patterns - convert to VYM-360 with -M
+            if (model.startsWith('VYM-SK-')) {
+                // Replace VYM-SK- with VYM-360- and add -M if not present
+                const vym360Version = model.replace('VYM-SK-', 'VYM-360-');
+                variations.push(vym360Version);
+                if (!vym360Version.endsWith('-M')) {
+                    variations.push(vym360Version + '-M');
+                }
+                
+                // Also handle if original has numeric suffix
+                if (numericSuffixPattern.test(vym360Version)) {
+                    variations.push(vym360Version.replace(numericSuffixPattern, '-M'));
+                }
+            }
+            
+            // 6. Handle VYM-360 patterns - also try VYM-SK variations
+            if (model.startsWith('VYM-360-')) {
+                // Replace VYM-360- with VYM-SK-
+                const vymSkVersion = model.replace('VYM-360-', 'VYM-SK-');
+                variations.push(vymSkVersion);
+                
+                // If the original VYM-360 has -M, also try VYM-SK without -M
+                if (model.endsWith('-M')) {
+                    const baseVymSk = vymSkVersion.slice(0, -2);
+                    variations.push(baseVymSk);
+                }
+            }
+            
+            // 7. Handle SMC prefix - convert to SM and SM2 variations
             if (model.startsWith('SMC-')) {
                 // Replace SMC with SM
                 const smVersion = model.replace('SMC-', 'SM-');
@@ -1308,7 +1336,7 @@
                 }
             }
             
-            // 6. If model starts with SM-, try SM2- and SMC- variations
+            // 8. If model starts with SM-, try SM2- and SMC- variations
             if (model.startsWith('SM-')) {
                 const sm2Version = model.replace('SM-', 'SM2-');
                 variations.push(sm2Version);
@@ -1332,7 +1360,7 @@
                 }
             }
             
-            // 7. If model starts with SM2-, try SM- and SMC- variations
+            // 9. If model starts with SM2-, try SM- and SMC- variations
             if (model.startsWith('SM2-')) {
                 const smVersion = model.replace('SM2-', 'SM-');
                 variations.push(smVersion);
@@ -1356,7 +1384,7 @@
                 }
             }
             
-            // 8. If model ends with -M, also try removing -M and matching base model
+            // 10. If model ends with -M, also try removing -M and matching base model
             if (model.endsWith('-M')) {
                 const baseModel = model.slice(0, -2);
                 variations.push(baseModel);
@@ -1381,9 +1409,18 @@
                 if (baseModel.startsWith('TS-')) {
                     variations.push(baseModel.replace('TS-P', 'SKS-'));
                 }
+                // Check VYM variations for base model
+                if (baseModel.startsWith('VYM-SK-')) {
+                    const vym360Base = baseModel.replace('VYM-SK-', 'VYM-360-');
+                    variations.push(vym360Base);
+                    variations.push(vym360Base + '-M');
+                }
+                if (baseModel.startsWith('VYM-360-')) {
+                    variations.push(baseModel.replace('VYM-360-', 'VYM-SK-'));
+                }
             }
             
-            // 9. Generate combination variations for models with numeric suffixes
+            // 11. Generate combination variations for models with numeric suffixes
             // This handles cases like SM-S-18-BR-2 → SM2-S-18-BR-M
             if (numericSuffixPattern.test(model)) {
                 const baseWithoutNumber = model.replace(numericSuffixPattern, '');
@@ -1406,6 +1443,10 @@
                 }
                 if (baseWithoutNumber.startsWith('TS-')) {
                     variations.push(baseWithoutNumber.replace('TS-P', 'SKS-') + '-M');
+                }
+                // Handle VYM patterns with numeric suffixes
+                if (baseWithoutNumber.startsWith('VYM-SK-')) {
+                    variations.push(baseWithoutNumber.replace('VYM-SK-', 'VYM-360-') + '-M');
                 }
             }
             
